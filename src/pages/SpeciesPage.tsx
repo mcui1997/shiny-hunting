@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from 'react';
-import { CatchFacts, Thoughts } from '../components/CatchDetail';
+import { CatchFacts } from '../components/CatchDetail';
 import { HuntTables } from '../components/HuntTables';
 import { Sprite } from '../components/Sprite';
 import { BackLink, catchStatusPill, dexNo, formatWhen, Pill, SparkleIcon } from '../components/ui';
@@ -73,7 +73,6 @@ export function SpeciesPage({ id }: { id: number }) {
                 </div>
               </div>
               <CatchFacts c={latest} />
-              <Thoughts c={latest} />
               {entry.catches.length > 1 && <OtherCatches catches={entry.catches.slice(1)} />}
             </>
           ) : (

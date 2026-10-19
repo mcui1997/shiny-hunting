@@ -1,6 +1,6 @@
 import { parseCount, parseValue } from '../lib/csv';
 import { href } from '../lib/router';
-import { chanceWithin, countsForLuck, formatCount, formatValue, oddsOf } from '../lib/stats';
+import { countsForLuck, formatCount, formatValue, oddsOf } from '../lib/stats';
 import { DEFAULT_ODDS, type CatchRow } from '../lib/types';
 import { formatWhen, STATUS_LABEL } from './ui';
 
@@ -60,24 +60,5 @@ export function CatchFacts({ c }: { c: CatchRow }) {
       {odds !== DEFAULT_ODDS && <Fact label="Odds" value={`1 in ${formatCount(odds)}`} />}
       {c.sold_on && <Fact label="Sold on" value={formatWhen(c.sold_on).date} />}
     </div>
-  );
-}
-
-export function Thoughts({ c }: { c: CatchRow }) {
-  if (!c.thoughts) return null;
-  const enc = parseCount(c.encounters);
-  const odds = oddsOf(c);
-  let caption: string | null = null;
-  if (enc && countsForLuck(c)) {
-    const p = chanceWithin(enc, odds);
-    const oneIn = Math.round(1 / p);
-    caption = `A ${(p * 100).toFixed(1)}% chance of a shiny within ${formatCount(enc)} encounters${p < 0.5 ? `, about 1 in ${oneIn}` : ''}.`;
-  }
-  return (
-    <figure className="quote">
-      <span className="eyebrow">Thoughts</span>
-      <blockquote>{c.thoughts}</blockquote>
-      {caption && <figcaption>{caption}</figcaption>}
-    </figure>
   );
 }

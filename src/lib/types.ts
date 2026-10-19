@@ -77,7 +77,7 @@ export const NON_HUNT_METHODS = ['traded', 'bought'];
 export const CATCH_COLUMNS = [
   'id', 'species', 'form', 'current_form', 'evolved_on', 'caught_at', 'encounters', 'method',
   'location', 'season', 'nature', 'ivs', 'ball', 'odds', 'est_value', 'status', 'sold_for',
-  'sold_on', 'thoughts',
+  'sold_on',
 ] as const;
 export type CatchColumn = (typeof CATCH_COLUMNS)[number];
 /** One row of caught.csv. Every value is a string as stored; helpers parse numbers and dates. */

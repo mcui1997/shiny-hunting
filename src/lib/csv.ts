@@ -11,7 +11,7 @@ export const LIMITS = {
   /** Largest CSV the importer will read. Your real files are a few KB. */
   fileBytes: 1_000_000,
   rows: 5_000,
-  /** Longest Thoughts / notes text, in characters. */
+  /** Longest notes text, in characters. */
   longText: 4_000,
   /** Longest short field (location, ball, IVs, names…). */
   shortText: 120,
@@ -95,7 +95,7 @@ export function parseCsv(text: string): Parsed {
 
 export function detectFile(fields: string[]): FileKey | null {
   const has = (f: string) => fields.includes(f);
-  if (has('species') && (has('encounters') || has('caught_at') || has('thoughts'))) return 'caught';
+  if (has('species') && (has('encounters') || has('caught_at'))) return 'caught';
   if (has('species') && (has('priority') || (has('status') && !has('encounters')))) return 'goals';
   if (has('species') && has('notes')) return 'notes';
   return null;
@@ -195,7 +195,7 @@ export interface Normalized<T> {
 const blankRow = <K extends string>(cols: readonly K[]) =>
   Object.fromEntries(cols.map((c) => [c, ''])) as Record<K, string>;
 
-const LONG_FIELDS = new Set(['thoughts', 'notes']);
+const LONG_FIELDS = new Set(['notes']);
 
 /** Copy only known columns, cleaned and length-capped. */
 function pick<K extends string>(raw: Record<string, unknown>, cols: readonly K[], line: number, issues: string[]) {

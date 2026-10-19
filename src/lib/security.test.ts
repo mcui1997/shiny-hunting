@@ -17,7 +17,7 @@ describe('spreadsheet formula injection', () => {
   ];
 
   it.each(payloads)('export makes %j inert', (p) => {
-    const row = { ...blank(), id: 's001', species: 'Aron', thoughts: p, location: p };
+    const row = { ...blank(), id: 's001', species: 'Aron', ball: p, location: p };
     const csv = toCsv([row], CATCH_COLUMNS);
     const line = csv.split('\n')[1];
     // No cell in the exported line may begin with a formula character.
@@ -28,9 +28,9 @@ describe('spreadsheet formula injection', () => {
   });
 
   it('round-trips through export and import unchanged', () => {
-    const row = { ...blank(), id: 's001', species: 'Aron', caught_at: '2026-09-23 21:04', thoughts: '=1+1 and "quotes", commas\nand lines' };
+    const row = { ...blank(), id: 's001', species: 'Aron', caught_at: '2026-09-23 21:04', location: '=1+1 and "quotes", commas' };
     const back = normalizeCatches(parseCsv(toCsv([row], CATCH_COLUMNS)).rows, resolve);
-    expect(back.rows[0].thoughts).toBe(row.thoughts);
+    expect(back.rows[0].location).toBe(row.location);
   });
 
   it('leaves ordinary text and numbers alone', () => {
@@ -53,8 +53,9 @@ describe('CSV parsing limits', () => {
   });
 
   it('caps field lengths and says so', () => {
-    const r = normalizeCatches([{ species: 'Aron', caught_at: '2026-09-23', thoughts: 'x'.repeat(LIMITS.longText + 10), location: 'y'.repeat(500) }], resolve);
-    expect([...r.rows[0].thoughts]).toHaveLength(LIMITS.longText);
+    const n = normalizeNotes([{ species: 'Aron', notes: 'x'.repeat(LIMITS.longText + 10) }], resolve);
+    expect([...n.rows[0].notes]).toHaveLength(LIMITS.longText);
+    const r = normalizeCatches([{ species: 'Aron', caught_at: '2026-09-23', location: 'y'.repeat(500) }], resolve);
     expect(r.rows[0].location.length).toBe(LIMITS.shortText);
     expect(r.issues.join(' ')).toMatch(/cut short/);
   });
@@ -71,10 +72,10 @@ describe('prototype pollution', () => {
   });
 
   it('ignores inherited properties on input rows', () => {
-    const evil = Object.create({ thoughts: 'inherited' });
+    const evil = Object.create({ location: 'inherited' });
     evil.species = 'Aron';
     evil.caught_at = '2026-09-23';
-    expect(normalizeCatches([evil], resolve).rows[0].thoughts).toBe('');
+    expect(normalizeCatches([evil], resolve).rows[0].location).toBe('');
   });
 });
 
@@ -88,8 +89,8 @@ describe('text cleaning', () => {
     expect(cleanText('one\r\ntwo', 100, false).text).toBe('one two');
   });
   it('treats HTML as plain text (React escapes it on screen)', () => {
-    const r = normalizeCatches([{ species: '<img src=x onerror=alert(1)>', caught_at: '2026-09-23', thoughts: '<script>alert(1)</script>' }], resolve);
-    expect(r.rows[0].thoughts).toBe('<script>alert(1)</script>');
+    const r = normalizeCatches([{ species: '<img src=x onerror=alert(1)>', caught_at: '2026-09-23', location: '<script>alert(1)</script>' }], resolve);
+    expect(r.rows[0].location).toBe('<script>alert(1)</script>');
     expect(r.issues.join(' ')).toMatch(/isn't a Pokémon name/);
   });
 });
@@ -137,9 +138,9 @@ describe('tampered browser storage', () => {
     expect(normalizeNotes(junk, resolve).rows).toEqual([]);
   });
   it('coerces non-string values', () => {
-    const r = normalizeCatches([{ species: 'Aron', caught_at: '2026-09-23', encounters: 26321 as unknown as string, thoughts: { a: 1 } as unknown as string }], resolve);
+    const r = normalizeCatches([{ species: 'Aron', caught_at: '2026-09-23', encounters: 26321 as unknown as string, location: { a: 1 } as unknown as string }], resolve);
     expect(r.rows[0].encounters).toBe('26321');
-    expect(r.rows[0].thoughts).toBe('[object Object]');
+    expect(r.rows[0].location).toBe('[object Object]');
   });
 });
 

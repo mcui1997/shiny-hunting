@@ -221,11 +221,6 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
           </fieldset>
         )}
 
-        <div className="field">
-          <label htmlFor="f-thoughts">Thoughts</label>
-          <textarea id="f-thoughts" className="textarea" rows={4} maxLength={LIMITS.longText} value={row.thoughts} onChange={set('thoughts')} />
-        </div>
-
         <div className="form-actions">
           {existing ? <button type="button" className="btn btn--danger" onClick={onDelete}>Delete catch</button> : <span />}
           <div className="row">

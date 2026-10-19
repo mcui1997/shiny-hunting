@@ -184,7 +184,6 @@ details > summary { cursor: pointer; font-weight: 700; min-height: 40px; display
 .entry-tile { width: 96px; height: 96px; border-radius: 14px; background: var(--tile); display: grid; place-items: center; text-decoration: none; }
 .entry--gilt .entry-tile { background: var(--gilt); }
 .entry-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.entry-thought { margin: 4px 0 0; color: var(--neutral-ink); font-style: italic; white-space: pre-line; }
 .entry-actions { display: flex; gap: 8px; }
 @media (max-width: 640px) {
   .entry { grid-template-columns: 72px minmax(0, 1fr); }
