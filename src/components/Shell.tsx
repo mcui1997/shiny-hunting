@@ -1,5 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { href, type Route } from '../lib/router';
+import { LIMITS } from '../lib/csv';
 import { downloadText, useStore, type ImportResult } from '../lib/store';
 import type { FileKey } from '../lib/types';
 import { SparkleIcon } from './ui';
@@ -20,11 +21,21 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
   async function onFiles(files: FileList | null) {
     if (!files?.length) return;
     const results: ImportResult[] = [];
-    for (const file of Array.from(files)) {
-      const r = store.importCsv(await file.text());
-      results.push({ ...r, issues: r.issues.map((i) => `${file.name}: ${i}`) });
+    for (const file of Array.from(files).slice(0, 3)) {
+      const name = file.name.slice(0, 60);
+      // Check the size before reading so a huge file never gets loaded into memory.
+      if (file.size > LIMITS.fileBytes) {
+        results.push({ file: null, count: 0, issues: [`${name}: ${Math.round(file.size / 1024)} KB is over the ${LIMITS.fileBytes / 1_000_000} MB limit.`] });
+        continue;
+      }
+      let text: string;
+      try { text = await file.text(); } catch { results.push({ file: null, count: 0, issues: [`${name}: couldn't read the file.`] }); continue; }
+      const r = store.importCsv(text, (f, incoming, current) =>
+        confirm(`Replace ${FILE_NAME[f]} (${current} rows now) with ${incoming} rows from ${name}?\n\nThis only changes this browser until you export and commit.`));
+      if (r.cancelled) continue;
+      results.push({ ...r, issues: r.issues.map((i) => `${name}: ${i}`) });
     }
-    setImported(results);
+    setImported(results.length ? results : null);
     if (fileInput.current) fileInput.current.value = '';
   }
 
@@ -53,6 +64,12 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
           <ExportMenu onExport={exportFile} dirty={store.dirty} />
         </nav>
       </header>
+
+      {store.storageFailed && (
+        <div className="banner banner--warn" role="alert">
+          <p><strong>This browser isn't saving your edits</strong> (storage is full, blocked, or in private mode). Export before you close the tab.</p>
+        </div>
+      )}
 
       {store.repoIssues.length > 0 && (
         <div className="banner banner--warn" role="status">

@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
-  COLUMNS, detectFile, hashText, makeResolver, nextCatchId, normalizeCatches, normalizeGoals,
-  normalizeNotes, parseCsv, toCsv,
+  COLUMNS, detectFile, hashText, ImportError, LIMITS, makeResolver, nextCatchId, normalizeCatches,
+  normalizeGoals, normalizeNotes, parseCsv, toCsv, type Resolve,
 } from './csv';
 import { Game } from './game';
 import type { CatchRow, FileKey, GameData, GoalRow, NoteRow } from './types';
@@ -17,26 +17,58 @@ interface LocalEdits {
   updatedAt?: string;
 }
 
+const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+
+/**
+ * Read saved edits defensively. Anything that isn't the expected shape is dropped; the rows
+ * themselves are re-checked by the same normalizers as an import once the game data loads.
+ */
 function readLocal(): LocalEdits {
+  const empty: LocalEdits = { rows: {}, baseHash: {} };
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as LocalEdits;
+    if (!raw || raw.length > LIMITS.fileBytes * 3) return empty;
+    const parsed: unknown = JSON.parse(raw);
+    if (!isRecord(parsed) || !isRecord(parsed.rows)) return empty;
+    const out: LocalEdits = { rows: {}, baseHash: {} };
+    for (const f of FILES) {
+      const rows = parsed.rows[f];
+      if (Array.isArray(rows) && rows.every(isRecord)) (out.rows as Record<string, unknown>)[f] = rows;
+      const h = isRecord(parsed.baseHash) ? parsed.baseHash[f] : undefined;
+      if (typeof h === 'string' && /^[0-9a-f]{1,8}$/.test(h)) out.baseHash[f] = h;
+    }
+    if (typeof parsed.updatedAt === 'string' && parsed.updatedAt.length < 40) out.updatedAt = parsed.updatedAt;
+    return out;
   } catch { /* storage blocked or corrupt: start clean */ }
-  return { rows: {}, baseHash: {} };
+  return empty;
 }
 
-function writeLocal(l: LocalEdits) {
+/** Returns false when the browser refused to save (storage full, blocked, private mode). */
+function writeLocal(l: LocalEdits): boolean {
   try {
     if (Object.keys(l.rows).length === 0) window.localStorage.removeItem(STORAGE_KEY);
     else window.localStorage.setItem(STORAGE_KEY, JSON.stringify(l));
-  } catch { /* storage blocked: edits still live for this visit */ }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export interface ImportResult {
   file: FileKey | null;
   count: number;
   issues: string[];
+  cancelled?: boolean;
 }
+
+function normalizeWithIssues(file: FileKey, rows: Record<string, unknown>[], resolve: Resolve) {
+  if (file === 'caught') return normalizeCatches(rows, resolve);
+  if (file === 'goals') return normalizeGoals(rows, resolve);
+  return normalizeNotes(rows, resolve);
+}
+
+const normalizeFile = (file: FileKey, rows: Record<string, unknown>[], resolve: Resolve) =>
+  normalizeWithIssues(file, rows, resolve).rows;
 
 interface Store {
   status: 'loading' | 'ready' | 'error';
@@ -56,7 +88,10 @@ interface Store {
   saveGoal: (row: GoalRow, previousSpecies?: string) => void;
   deleteGoal: (species: string) => void;
   saveNote: (species: string, notes: string) => void;
-  importCsv: (text: string) => ImportResult;
+  /** True when this browser refused to save edits (storage full, blocked, private mode). */
+  storageFailed: boolean;
+  /** `confirmReplace(file, incoming, current)` is asked before an import replaces a file. */
+  importCsv: (text: string, confirmReplace: (file: FileKey, incoming: number, current: number) => boolean) => ImportResult;
   csvText: (file: FileKey) => string;
   discard: (file: FileKey) => void;
 }
@@ -104,17 +139,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           ...gl.issues.map((i) => `goals.csv ${i}`),
           ...n.issues.map((i) => `notes.csv ${i}`),
         ]);
-        // Local edits identical to the repo copy were exported and committed: clear them.
         setLocal((prev) => {
           const next: LocalEdits = { ...prev, rows: { ...prev.rows }, baseHash: { ...prev.baseHash } };
           for (const f of FILES) {
-            const mine = next.rows[f];
-            if (mine && toCsv(mine as Record<string, string>[], COLUMNS[f]) === toCsv(rows[f] as Record<string, string>[], COLUMNS[f])) {
+            const stored = next.rows[f];
+            if (!stored) continue;
+            // Saved edits get the same checks as an import, so a tampered or outdated copy
+            // can't put anything into the page that a CSV couldn't.
+            const mine = normalizeFile(f, stored as unknown as Record<string, unknown>[], resolve);
+            // Identical to the repo copy means it was exported and committed: clear it.
+            if (toCsv(mine as Record<string, string>[], COLUMNS[f]) === toCsv(rows[f] as Record<string, string>[], COLUMNS[f])) {
               delete next.rows[f];
               delete next.baseHash[f];
+            } else {
+              (next.rows as Record<string, unknown>)[f] = mine;
             }
           }
-          writeLocal(next);
           return next;
         });
         setStatus('ready');
@@ -133,18 +173,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     notes: local.rows.notes ?? repo.notes,
   }), [local, repo]);
 
+  // Persist after every change; remember if the browser refused so the page can warn.
+  const [storageFailed, setStorageFailed] = useState(false);
+  useEffect(() => { setStorageFailed(!writeLocal(local)); }, [local]);
+
   const update = useCallback(<K extends FileKey>(file: K, fn: (cur: Rows[K]) => Rows[K]) => {
+    if (!game) return;
+    const resolve = makeResolver(game.names);
     setLocal((prev) => {
       const cur = (prev.rows[file] ?? repo[file]) as Rows[K];
-      const next: LocalEdits = {
-        rows: { ...prev.rows, [file]: fn(cur) },
+      // Every edit passes through the same normalizer as an import.
+      const nextRows = normalizeFile(file, fn(cur) as unknown as Record<string, unknown>[], resolve) as Rows[K];
+      return {
+        rows: { ...prev.rows, [file]: nextRows },
         baseHash: { ...prev.baseHash, [file]: prev.baseHash[file] ?? repoHash[file] },
         updatedAt: new Date().toISOString(),
       };
-      writeLocal(next);
-      return next;
     });
-  }, [repo, repoHash]);
+  }, [game, repo, repoHash]);
 
   const store: Store = {
     status, error, game, rows, repoIssues,
@@ -171,34 +217,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const rest = cur.filter((r) => r.species !== species);
       return notes.trim() ? [...rest, { species, notes: notes.trim() }] : rest;
     }),
-    importCsv: (text) => {
+    storageFailed,
+    importCsv: (text, confirmReplace) => {
       if (!game) return { file: null, count: 0, issues: ['Still loading.'] };
-      const parsed = parseCsv(text);
+      let parsed;
+      try {
+        parsed = parseCsv(text);
+      } catch (e) {
+        return { file: null, count: 0, issues: [e instanceof ImportError ? e.message : "Couldn't read that file as CSV."] };
+      }
       const file = detectFile(parsed.fields);
-      const resolve = makeResolver(game.names);
-      if (file === 'caught') {
-        const r = normalizeCatches(parsed.rows, resolve);
-        update('caught', () => r.rows);
-        return { file, count: r.rows.length, issues: r.issues };
-      }
-      if (file === 'goals') {
-        const r = normalizeGoals(parsed.rows, resolve);
-        update('goals', () => r.rows);
-        return { file, count: r.rows.length, issues: r.issues };
-      }
-      if (file === 'notes') {
-        const r = normalizeNotes(parsed.rows, resolve);
-        update('notes', () => r.rows);
-        return { file, count: r.rows.length, issues: r.issues };
-      }
-      return { file: null, count: 0, issues: ["That file's columns don't match caught.csv, goals.csv or notes.csv."] };
+      if (!file) return { file: null, count: 0, issues: ["That file's columns don't match caught.csv, goals.csv or notes.csv."] };
+      const r = normalizeWithIssues(file, parsed.rows, makeResolver(game.names));
+      if (!confirmReplace(file, r.rows.length, rows[file].length)) return { file, count: 0, issues: [], cancelled: true };
+      update(file, () => r.rows as never);
+      return { file, count: r.rows.length, issues: r.issues };
     },
     csvText: (file) => toCsv(rows[file] as Record<string, string>[], COLUMNS[file]),
     discard: (file) => setLocal((prev) => {
       const next: LocalEdits = { ...prev, rows: { ...prev.rows }, baseHash: { ...prev.baseHash } };
       delete next.rows[file];
       delete next.baseHash[file];
-      writeLocal(next);
       return next;
     }),
   };

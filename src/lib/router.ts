@@ -9,21 +9,25 @@ export type Route =
   | { page: 'catch-new'; species?: string }
   | { page: 'catch-edit'; id: string };
 
+const safeDecode = (s: string) => {
+  try { return decodeURIComponent(s); } catch { return ''; }
+};
+
 export function parseHash(hash: string): Route {
-  const [path, query = ''] = hash.replace(/^#/, '').split('?');
+  const [path, query = ''] = hash.slice(0, 200).replace(/^#/, '').split('?');
   const parts = path.split('/').filter(Boolean);
   const params = new URLSearchParams(query);
   switch (parts[0]) {
     case 'p': {
-      const id = Number.parseInt(parts[1] ?? '', 10);
+      const id = /^\d{1,4}$/.test(parts[1] ?? '') ? Number.parseInt(parts[1], 10) : NaN;
       return Number.isFinite(id) ? { page: 'species', id } : { page: 'dex' };
     }
     case 'caught': return { page: 'caught' };
     case 'goals': return { page: 'goals' };
     case 'stats': return { page: 'stats' };
     case 'catch':
-      if (parts[1] === 'new') return { page: 'catch-new', species: params.get('species') ?? undefined };
-      if (parts[1]) return { page: 'catch-edit', id: decodeURIComponent(parts[1]) };
+      if (parts[1] === 'new') return { page: 'catch-new', species: params.get('species')?.slice(0, 40) ?? undefined };
+      if (parts[1]) return { page: 'catch-edit', id: safeDecode(parts[1]).slice(0, 20) };
       return { page: 'caught' };
     default: return { page: 'dex' };
   }

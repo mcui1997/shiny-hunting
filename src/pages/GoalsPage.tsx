@@ -40,7 +40,7 @@ export function GoalsPage() {
         <form className="row" style={{ alignItems: 'flex-end' }} onSubmit={(e) => { e.preventDefault(); add(); }}>
           <div className="field">
             <label htmlFor="add-goal">Add a goal</label>
-            <input id="add-goal" className="input" list="species-names" placeholder="Pokémon name" value={adding}
+            <input id="add-goal" maxLength={40} className="input" list="species-names" placeholder="Pokémon name" value={adding}
               aria-invalid={addError ? true : undefined} aria-describedby={addError ? 'add-goal-error' : undefined}
               onChange={(e) => { setAdding(e.target.value); setAddError(null); }} />
           </div>

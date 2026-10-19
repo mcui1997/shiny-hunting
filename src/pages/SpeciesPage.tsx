@@ -1,8 +1,9 @@
 import { Fragment, useEffect, useState } from 'react';
-import { CatchFacts, screenshotUrl, Thoughts } from '../components/CatchDetail';
+import { CatchFacts, Thoughts } from '../components/CatchDetail';
 import { HuntTables } from '../components/HuntTables';
 import { Sprite } from '../components/Sprite';
 import { BackLink, catchStatusPill, dexNo, formatWhen, Pill, SparkleIcon } from '../components/ui';
+import { LIMITS } from '../lib/csv';
 import { useDerived } from '../lib/derived';
 import { href } from '../lib/router';
 import { currentSpecies, formatCount, isMineState, isOwned, isOwnedState } from '../lib/stats';
@@ -73,7 +74,6 @@ export function SpeciesPage({ id }: { id: number }) {
               </div>
               <CatchFacts c={latest} />
               <Thoughts c={latest} />
-              {latest.screenshot && <img className="shot" src={screenshotUrl(latest.screenshot)} alt={`Screenshot of the ${latest.species} catch`} loading="lazy" />}
               {entry.catches.length > 1 && <OtherCatches catches={entry.catches.slice(1)} />}
             </>
           ) : (
@@ -236,7 +236,7 @@ function HuntNotes({ species }: { species: string }) {
   return (
     <section className="field">
       <label htmlFor="hunt-notes" className="h3" style={{ color: 'var(--ink)' }}>Your hunt notes</label>
-      <textarea id="hunt-notes" className="textarea" rows={3}
+      <textarea id="hunt-notes" className="textarea" rows={3} maxLength={LIMITS.longText}
         placeholder="Anything the data doesn't know: best spot to Sweet Scent from, your rotation, what to bring, how you'll get an egg-only one."
         value={text} onChange={(e) => setText(e.target.value)} onBlur={() => changed && store.saveNote(species, text)} />
       {changed && <div className="row"><button type="button" className="btn btn--small btn--primary" onClick={() => store.saveNote(species, text)}>Save notes</button></div>}
