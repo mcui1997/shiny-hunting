@@ -5,7 +5,7 @@ import { Sprite } from '../components/Sprite';
 import { BackLink, catchStatusPill, dexNo, formatWhen, Pill, SparkleIcon } from '../components/ui';
 import { useDerived } from '../lib/derived';
 import { href } from '../lib/router';
-import { currentSpecies, formatCount, isOwned } from '../lib/stats';
+import { currentSpecies, formatCount, isMineState, isOwned, isOwnedState } from '../lib/stats';
 import { useStore } from '../lib/store';
 import { GOAL_STATUSES, PRIORITIES, SEASONS, type CatchRow, type Season, type Species } from '../lib/types';
 
@@ -23,7 +23,7 @@ export function SpeciesPage({ id }: { id: number }) {
     );
   }
   const entry = d.dex.get(sp.name);
-  const mine = entry.state === 'owned' || entry.state === 'caught';
+  const mine = isMineState(entry.state);
   const latest = entry.catches[0];
   const family = d.game.family(sp.id);
   // Hunt as this species first, then the rest of its family that appears in the wild.
@@ -150,7 +150,7 @@ function EvolutionLine({ sp, family }: { sp: Species; family: Species[] }) {
             <a className="evo-step" href={href.species(f.id)} aria-current={f.id === sp.id ? 'page' : undefined}>
               <Sprite id={f.id} name={f.name} shiny size={28} />
               {f.name}
-              {(d.dex.get(f.name).state === 'owned') && <SparkleIcon size={12} />}
+              {isOwnedState(d.dex.get(f.name).state) && <SparkleIcon size={12} />}
             </a>
           </Fragment>
         );

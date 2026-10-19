@@ -9,7 +9,12 @@ export function useDerived() {
   const { game, rows } = useStore();
   return useMemo(() => {
     if (!game) return null;
-    const dex = new DexIndex(rows.caught, (n) => game.byName.get(n)?.family);
+    const dex = new DexIndex(rows.caught, (n) => game.byName.get(n)?.family, (from, to) => {
+      const a = game.byName.get(from);
+      const b = game.byName.get(to);
+      const steps = a && b ? game.path(a.id, b.id) : null;
+      return steps ? steps.slice(0, -1).map((s) => game.name(s.id)) : [];
+    });
     const goals = new Map<string, GoalRow>(rows.goals.map((g) => [g.species, g]));
     const progress = new Map<string, GoalProgress>(rows.goals.map((g) => [g.species, goalProgress(g, rows.caught, game)]));
     const order = chronological(rows.caught);

@@ -15,7 +15,7 @@ All in `public/data/`. Edit them on GitHub, in any spreadsheet app, or on the si
 | `id` | `s001`, `s002`… Unique. Leave blank on new rows and the site assigns one. |
 | `species` | What you caught. Never changes, even after evolving. |
 | `form` | Only for Unown letters, Deerling seasons, etc. |
-| `current_form` | What it is now, if you evolved it. Blank = same as `species`. |
+| `current_form` | What it is now, if you evolved it. Blank = same as `species`. Put the final stage only: Litwick → `Chandelure` also marks Lampent in your dex. |
 | `evolved_on` | `2026-10-20` |
 | `caught_at` | `2026-10-17 19:14` (also reads `10/17/26, 7:14 PM`) |
 | `encounters` | **Since your previous shiny**, so totals and luck add up. A second shiny in the same horde is `0`. |

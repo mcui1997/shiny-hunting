@@ -27,9 +27,10 @@ export function Pill({ tone, children }: { tone: 'gold' | 'ember' | 'teal' | 'so
 }
 
 /** The badge in a dex card's corner: collection state first, then goal. */
-export function StatePill({ state, goal, progress }: { state: DexState; goal?: GoalRow; progress?: GoalProgress }) {
+export function StatePill({ state, goal, progress, goneStatus }: { state: DexState; goal?: GoalRow; progress?: GoalProgress; goneStatus?: string }) {
   if (state === 'owned') return <Pill tone="gold">Owned</Pill>;
-  if (state === 'caught') return <Pill tone="gold">Caught</Pill>;
+  if (state === 'evolved') return <Pill tone="gold">Evolved</Pill>;
+  if (state === 'gone' && !goal) return <Pill tone="neutral">{STATUS_LABEL[goneStatus ?? ''] ?? 'Gone'}</Pill>;
   if (goal) {
     if (progress?.kind === 'evolve') return <Pill tone="teal">Evolve to finish</Pill>;
     const label = [goal.priority, goal.status === 'hunting' ? 'Hunting' : goal.status === 'paused' ? 'Paused' : 'Goal'].filter(Boolean).join(' · ');
