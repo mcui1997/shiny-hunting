@@ -58,10 +58,10 @@ describe('CSV round trip', () => {
     const row = Object.fromEntries(CATCH_COLUMNS.map((c) => [c, ''])) as Record<string, string>;
     row.id = 's001';
     row.species = 'Litwick';
-    row.thoughts = 'Tilted, grinding at 4 a.m., "for real".\nSecond line — Pokémon é ♀';
+    row.location = 'Tilted, grinding at 4 a.m., "for real" — Pokémon é ♀';
     const text = toCsv([row], CATCH_COLUMNS);
     const back = parseCsv(text).rows[0];
-    expect(back.thoughts).toBe(row.thoughts);
+    expect(back.location).toBe(row.location);
     expect(back.species).toBe('Litwick');
   });
 
@@ -72,7 +72,8 @@ describe('CSV round trip', () => {
     const { rows, issues } = normalizeCatches(parsed.rows, resolve);
     expect(issues).toEqual([]);
     expect(rows).toHaveLength(2);
-    expect(rows[0]).toMatchObject({ id: 's001', species: 'Aron', encounters: '26321', caught_at: '2026-09-23 21:04', est_value: '2000000', status: 'kept', thoughts: 'My first, honestly' });
+    expect(rows[0]).toMatchObject({ id: 's001', species: 'Aron', encounters: '26321', caught_at: '2026-09-23 21:04', est_value: '2000000', status: 'kept' });
+    expect('thoughts' in rows[0]).toBe(false); // old Thoughts column is ignored
     expect(rows[1]).toMatchObject({ id: 's002', species: 'Heatmor', status: 'sold' });
   });
 });

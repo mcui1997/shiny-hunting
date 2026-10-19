@@ -18,7 +18,7 @@ export function CaughtPage() {
     <div className="stack" style={{ gap: 20 }}>
       <div className="row row--between">
         <div>
-          <h1 className="h1">Caught</h1>
+          <h1 className="h1">Owned</h1>
           <span className="muted">{rows.caught.length} shinies, newest first by default.</span>
         </div>
         <div className="row">
@@ -58,7 +58,6 @@ export function CaughtPage() {
                     {c.location && ` · ${c.location}`}
                     {c.est_value && ` · ${formatValue(parseValue(c.est_value))}`}
                   </span>
-                  {c.thoughts && <p className="entry-thought">“{c.thoughts}”</p>}
                 </div>
                 <div className="entry-actions">
                   <a className="btn btn--small" href={href.editCatch(c.id)}>Edit<span className="sr-only"> {now}</span></a>

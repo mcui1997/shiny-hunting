@@ -55,7 +55,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
         </a>
         <nav className="nav" aria-label="Main">
           {navLink('dex', href.dex(), 'Dex')}
-          {navLink('caught', href.caught(), 'Caught')}
+          {navLink('caught', href.caught(), 'Owned')}
           {navLink('goals', href.goals(), 'Goals')}
           {navLink('stats', href.stats(), 'Stats')}
           <span className="nav-sep" aria-hidden="true" />

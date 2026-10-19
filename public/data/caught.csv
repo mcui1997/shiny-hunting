@@ -1,10 +1,10 @@
-id,species,form,current_form,evolved_on,caught_at,encounters,method,location,season,nature,ivs,ball,odds,est_value,status,sold_for,sold_on,thoughts
-s001,Aron,,Aggron,,2026-09-23 21:04,26321,5x horde,Mistralton Cave (2F),Spring,Adamant,,,,2000000,kept,,,"My first shiny. 26k encounters to get here was rough. It appeared on the left and I just stared in disbelief. Shinies were real, and the hunt had begun."
-s002,Heatmor,,,,2026-09-30 22:59,36178,5x horde,Victory Road (Outside),Summer,,,,,3500000,sold,,,"Painful. Looking back, my first two shinies both were. A week of grinding, down to my last berry when it finally showed. I held it for a week, then sold it."
-s003,Krokorok,,Krookodile,,2026-10-02 09:33,5717,5x horde,Relic Castle (B2F),,Impish,,,,2000000,kept,,,"Where my luck started to turn. The morning after we'd gone out, still in bed: tabbed away, tabbed back, and there it was."
-s004,Haunter,,Gengar,,2026-10-05 18:39,17852,5x horde,Bell Tower (8F),Spring,Bold,,,,2000000,kept,,,"Beautiful. I always deliver on 100% hordes. About a day's work, counting the encounters before it."
-s005,Torkoal,,,,2026-10-09 10:16,21201,5x horde,Magma Hideout,Summer,,,,,2000000,kept,,,"A long dry spell, then the next morning, six Sweet Scents in, it appeared."
-s006,Litwick,,Chandelure,,2026-10-14 04:37,27825,,Celestial Tower,Summer,Modest,,,,4000000,kept,,,"A tough one. I felt bone dry, bouncing between here and Dragon's Den before settling back at Celestial Tower. Tilted and grinding at 4 a.m., for real."
-s007,Magikarp,,Gyarados,,2026-10-16 17:00,20470,5x horde,Dragon's Den,Summer,Jolly,,,,4000000,kept,,,"I wish it weren't a Magikarp, but it is what it is. Done with Dragon's Den for a while."
-s008,Smeargle,,,,2026-10-17 16:17,7671,5x horde,Artisan Cave (1F),Summer,,,,,2000000,kept,,,Easy work. I knew it was coming.
-s009,Nidorino,,Nidoking,,2026-10-17 19:14,1397,5x horde,,Summer,Lonely,,,,2000000,kept,,,Unbelievable. No words. The luck is finally turning.
+id,species,form,current_form,evolved_on,caught_at,encounters,method,location,season,nature,ivs,ball,odds,est_value,status,sold_for,sold_on
+s001,Aron,,Aggron,,2026-09-23 21:04,26321,5x horde,Mistralton Cave (2F),Spring,Adamant,,,,2000000,kept,,
+s002,Heatmor,,,,2026-09-30 22:59,36178,5x horde,Victory Road (Outside),Summer,,,,,3500000,sold,,
+s003,Krokorok,,Krookodile,,2026-10-02 09:33,5717,5x horde,Relic Castle (B2F),,Impish,,,,2000000,kept,,
+s004,Haunter,,Gengar,,2026-10-05 18:39,17852,5x horde,Bell Tower (8F),Spring,Bold,,,,2000000,kept,,
+s005,Torkoal,,,,2026-10-09 10:16,21201,5x horde,Magma Hideout,Summer,,,,,2000000,kept,,
+s006,Litwick,,Chandelure,,2026-10-14 04:37,27825,,Celestial Tower,Summer,Modest,,,,4000000,kept,,
+s007,Magikarp,,Gyarados,,2026-10-16 17:00,20470,5x horde,Dragon's Den,Summer,Jolly,,,,4000000,kept,,
+s008,Smeargle,,,,2026-10-17 16:17,7671,5x horde,Artisan Cave (1F),Summer,,,,,2000000,kept,,
+s009,Nidorino,,Nidoking,,2026-10-17 19:14,1397,5x horde,,Summer,Lonely,,,,2000000,kept,,

@@ -13,7 +13,7 @@
 
 - **Dex** of all 649 Gen 1–5 Pokémon in shiny and normal, filtered by owned, goals, season and solo hordes
 - **Hunt plans** for every species: horde splits by season and time of day, including earlier evolutions
-- **Your log** of catches with Thoughts, evolutions, value, and luck against 1 in 27,000 (donator status)
+- **Your log** of catches with evolutions, value, and luck against 1 in 27,000 (donator status)
 - **Edit on the site**, then export CSV and commit. No backend.
 - **Safe to import anyone's CSV:** rows are validated, exports are spreadsheet-safe, and the page runs under a strict Content Security Policy
 
@@ -40,7 +40,7 @@
 | `est_value` / `sold_for` | `2000000` or `2M` |
 | `status` | `kept`, `sold`, `traded`, `fled` |
 
-Also: `id`, `form`, `evolved_on`, `location`, `season`, `nature`, `ivs`, `ball`, `sold_on`, `thoughts`.
+Also: `id`, `form`, `evolved_on`, `location`, `season`, `nature`, `ivs`, `ball`, `sold_on`.
 
 </details>
 
