@@ -33,35 +33,45 @@ export function CaughtPage() {
       {list.length === 0 ? (
         <p className="empty">No shinies yet. Your first one goes here.</p>
       ) : (
-        <div className="list">
+        <div className="owned-list" role="list">
+          <div className="owned-head" aria-hidden="true">
+            <span />
+            <span>Shiny</span>
+            <span>Caught</span>
+            <span className="num">Encounters</span>
+            <span>Method · Location</span>
+            <span className="num">Value</span>
+            <span />
+          </div>
           {list.map((c) => {
             const now = currentSpecies(c);
             const sp = d.game.byName.get(now);
             const when = formatWhen(c.caught_at);
-            const gilt = c.status === 'kept';
+            const where = [c.method, c.location].filter(Boolean).join(' · ');
             return (
-              <article key={c.id} className={`entry${gilt ? ' entry--gilt' : ''}`}>
-                <a className="entry-tile" href={sp ? href.species(sp.id) : undefined} aria-label={`${now} details`}>
-                  {sp ? <Sprite id={sp.id} name={now} shiny size={80} /> : <span className="muted">?</span>}
+              <article key={c.id} role="listitem" className={`owned-row${c.status === 'kept' ? '' : ' owned-row--gone'}`}>
+                <a className="owned-tile" href={sp ? href.species(sp.id) : undefined} aria-label={`${now} details`} tabIndex={-1}>
+                  {sp ? <Sprite id={sp.id} name={now} shiny size={56} /> : <span className="muted">?</span>}
                 </a>
-                <div className="entry-body">
-                  <div className="row" style={{ gap: 8 }}>
+                <div className="owned-name">
+                  <div className="row" style={{ gap: 8, flexWrap: 'nowrap', minWidth: 0 }}>
                     <span className="mono small muted">#{d.shinyNumber.get(c.id)}</span>
-                    <a href={sp ? href.species(sp.id) : undefined} className="h3" style={{ color: 'var(--ink)', textDecoration: 'none' }}>{now}</a>
-                    {now !== c.species && <span className="small muted">caught as {c.species}</span>}
+                    <a href={sp ? href.species(sp.id) : undefined} className="owned-title">{now}</a>
                     {catchStatusPill(c.status)}
                   </div>
-                  <span className="small muted">
-                    {when.date}{when.time ? `, ${when.time}` : ''}
-                    {c.encounters && <> · <span className="mono" style={{ color: 'var(--ink)', fontWeight: 700 }}>{formatCount(Number(c.encounters))}</span> enc</>}
-                    {c.method && ` · ${c.method}`}
-                    {c.location && ` · ${c.location}`}
-                    {c.est_value && ` · ${formatValue(parseValue(c.est_value))}`}
-                  </span>
+                  {now !== c.species && <span className="small muted">caught as {c.species}</span>}
                 </div>
-                <div className="entry-actions">
-                  <a className="btn btn--small" href={href.editCatch(c.id)}>Edit<span className="sr-only"> {now}</span></a>
+                <div className="owned-cell owned-date">
+                  <span>{when.date}</span>
+                  {when.time && <span className="small muted">{when.time}</span>}
                 </div>
+                <div className="owned-cell num owned-encs">
+                  <span className="mono owned-enc">{c.encounters ? formatCount(Number(c.encounters)) : '—'}</span>
+                  <span className="small muted owned-label">encounters</span>
+                </div>
+                <div className="owned-cell owned-where">{where || <span className="muted">—</span>}</div>
+                <div className="owned-cell num owned-value">{c.est_value ? formatValue(parseValue(c.est_value)) : '—'}</div>
+                <a className="btn btn--small owned-edit" href={href.editCatch(c.id)}>Edit<span className="sr-only"> {now}</span></a>
               </article>
             );
           })}
