@@ -1,6 +1,6 @@
 import type { Summary } from '../lib/stats';
 import { formatCount, formatValue } from '../lib/stats';
-import { DEFAULT_ODDS } from '../lib/types';
+import { ODDS_LABEL } from '../lib/types';
 
 export function Totals({ s }: { s: Summary }) {
   const parts = [`${s.kept} kept`, s.sold && `${s.sold} sold`, s.traded && `${s.traded} traded`, s.fled && `${s.fled} fled`].filter(Boolean);
@@ -19,7 +19,7 @@ export function Totals({ s }: { s: Summary }) {
       <div className="tile tile--ink">
         <span className="eyebrow">Luck</span>
         <span className="tile-big">{s.luck ? `${s.luck.toFixed(2)}×` : '—'}</span>
-        <span className="tile-sub">vs. base odds of 1 in {formatCount(DEFAULT_ODDS)}</span>
+        <span className="tile-sub">vs. {ODDS_LABEL}</span>
       </div>
       <div className="tile">
         <span className="eyebrow">Value held</span>

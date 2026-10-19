@@ -22,7 +22,7 @@ All in `public/data/`. Edit them on GitHub, in any spreadsheet app, or on the si
 | `method` | `5x horde`, `3x horde`, `single`, `fishing`, `safari`, `egg`, `traded`, `bought`, `other` |
 | `location`, `season` | Free text / `Spring`… |
 | `nature`, `ivs`, `ball` | Optional |
-| `odds` | 1 in N. Blank = 27,000. Set it per row if your odds change, so old catches keep theirs. |
+| `odds` | 1 in N. Blank = 27,000: PokeMMO's 1 in 30,000 base with donator status. Set it per row if your odds change, so old catches keep theirs. |
 | `est_value`, `sold_for` | `2000000` (the site also accepts `2M`, `350K`) |
 | `status` | `kept`, `sold`, `traded`, `fled` (fled/KO'd still counts toward luck, not the collection) |
 | `sold_on` | Date |
