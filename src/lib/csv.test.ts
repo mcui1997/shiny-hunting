@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  detectFile, makeResolver, normalizeCatches, normalizeGoals, parseCount, parseCsv, parseDateTime,
+  detectFile, makeResolver, normalizeCatches, normalizeGoals, normalizeTag, parseCount, parseCsv, parseDateTime,
   parseValue, toCsv,
 } from './csv';
 import { CATCH_COLUMNS } from './types';
@@ -119,5 +119,22 @@ describe('normalizeGoals', () => {
       { species: 'Aron', priority: '', status: 'planned', notes: '' },
     ]);
     expect(issues).toHaveLength(2);
+  });
+});
+
+describe('tags', () => {
+  it('normalizes and keeps tags', () => {
+    const r = normalizeCatches([
+      { species: 'Aron', caught_at: '2026-09-23', tag: ' Utility ' },
+      { species: 'Aron', caught_at: '2026-09-24', tag: 'Cosmetic!!' },
+      { species: 'Aron', caught_at: '2026-09-25', tag: '' },
+    ], resolve);
+    expect(r.rows.map((x) => x.tag)).toEqual(['utility', 'cosmetic', '']);
+    expect(r.issues).toHaveLength(1);
+  });
+  it('caps tag length', () => expect(normalizeTag('x'.repeat(50))).toHaveLength(24));
+  it('a CSV without a tag column still imports', () => {
+    const r = normalizeCatches(parseCsv('species,caught_at\nAron,2026-09-23\n').rows, resolve);
+    expect(r.rows[0].tag).toBe('');
   });
 });

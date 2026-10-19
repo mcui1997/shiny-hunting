@@ -50,30 +50,48 @@ export function GoalsPage() {
       {addError && <p id="add-goal-error" className="banner banner--warn" style={{ margin: 0 }}>{addError}</p>}
       <datalist id="species-names">{d.game.names.map((n) => <option key={n} value={n} />)}</datalist>
 
+      {open.length === 0 && done.length === 0 && <p className="empty">No goals yet. Add one above.</p>}
+
       {GROUPS.map(([p, label]) => {
         const items = open.filter((g) => g.priority === p);
         if (!items.length) return null;
         return (
-          <section key={p} className="stack" aria-label={label}>
+          <section key={p || 'none'} className="stack" style={{ gap: 10 }} aria-label={label}>
             <h2 className="h2 group-title">{label} <span className="small muted" style={{ fontFamily: 'var(--body)', fontWeight: 600 }}>{items.length}</span></h2>
-            <div className="list">{items.map((g) => <GoalItem key={g.species} goal={g} />)}</div>
+            <GoalTable goals={items} />
           </section>
         );
       })}
 
       {done.length > 0 && (
-        <section className="stack">
+        <section className="stack" style={{ gap: 10 }}>
           <button type="button" className="btn" style={{ alignSelf: 'flex-start' }} aria-expanded={showDone} onClick={() => setShowDone((s) => !s)}>
             {showDone ? 'Hide' : 'Show'} {done.length} done
           </button>
-          {showDone && <div className="list">{done.map((g) => <GoalItem key={g.species} goal={g} />)}</div>}
+          {showDone && <GoalTable goals={done} />}
         </section>
       )}
     </div>
   );
 }
 
-function GoalItem({ goal }: { goal: GoalRow }) {
+function GoalTable({ goals }: { goals: GoalRow[] }) {
+  return (
+    <div className="owned-list" role="list">
+      <div className="goal-head" aria-hidden="true">
+        <span />
+        <span>Pokémon</span>
+        <span>Best spot</span>
+        <span>Priority</span>
+        <span>Status</span>
+        <span />
+      </div>
+      {goals.map((g) => <GoalRowItem key={g.species} goal={g} />)}
+    </div>
+  );
+}
+
+function GoalRowItem({ goal }: { goal: GoalRow }) {
   const d = useDerived()!;
   const store = useStore();
   const sp = d.game.byName.get(goal.species)!;
@@ -85,41 +103,51 @@ function GoalItem({ goal }: { goal: GoalRow }) {
     .filter((x) => x.top)
     .sort((a, b) => b.top.best - a.top.best || b.top.row.size - a.top.row.size || (a.f.id === sp.id ? -1 : 0))[0];
   const idBase = `goal-${sp.id}`;
+  const isDone = progress?.kind === 'done';
 
   return (
-    <article className={`entry${progress?.kind === 'done' ? ' entry--gilt' : ''}`}>
-      <a className="entry-tile" href={href.species(sp.id)} aria-label={`${sp.name} details`}>
-        <Sprite id={sp.id} name={sp.name} shiny size={80} />
+    <article role="listitem" className={`goal-row${isDone ? '' : ' goal-row--open'}`}>
+      <a className="owned-tile" href={href.species(sp.id)} aria-label={`${sp.name} details`} tabIndex={-1}>
+        <Sprite id={sp.id} name={sp.name} shiny size={56} />
       </a>
-      <div className="entry-body">
-        <div className="row" style={{ gap: 8 }}>
-          <a className="h3" href={href.species(sp.id)} style={{ color: 'var(--ink)', textDecoration: 'none' }}>{sp.name}</a>
-          {progress?.kind === 'done' && <Pill tone="gold">Done</Pill>}
-          {progress?.kind === 'evolve' && <Pill tone="teal">Have {progress.from}, evolve to finish</Pill>}
-          {goal.status === 'hunting' && progress?.kind === 'open' && <Pill tone="ember">Hunting</Pill>}
-          {goal.status === 'paused' && progress?.kind === 'open' && <Pill tone="neutral">Paused</Pill>}
+      <div className="owned-name">
+        <div className="row" style={{ gap: 8, flexWrap: 'nowrap', minWidth: 0 }}>
+          <a className="owned-title" href={href.species(sp.id)}>{sp.name}</a>
+          {isDone && <Pill tone="gold">Done</Pill>}
+          {!isDone && goal.status === 'hunting' && <Pill tone="ember">Hunting</Pill>}
+          {!isDone && goal.status === 'paused' && <Pill tone="neutral">Paused</Pill>}
         </div>
-        <span className="small muted">
-          {spotFor ? <>{spotFor.f.id !== sp.id && <>As {spotFor.f.name}: </>}{spotFor.label}</> : 'No horde spot in the data. Check the page for other encounters.'}
-        </span>
-        {d.notes.get(sp.name) && <span className="small" style={{ whiteSpace: 'pre-line' }}>{d.notes.get(sp.name)}</span>}
+        {progress?.kind === 'evolve' && <span className="small" style={{ color: 'var(--lagoon-deep)', fontWeight: 600 }}>Have {progress.from}, evolve to finish</span>}
       </div>
-      <div className="entry-actions" style={{ flexWrap: 'wrap' }}>
+      <div className="owned-cell goal-spot">
+        {spotFor ? (
+          <>
+            {spotFor.f.id !== sp.id && <span className="small muted">As {spotFor.f.name}</span>}
+            <span>{spotFor.label}</span>
+          </>
+        ) : (
+          <span className="muted">No horde spot. See its page.</span>
+        )}
+      </div>
+      <div className="goal-priority">
         <label className="sr-only" htmlFor={`${idBase}-p`}>Priority for {sp.name}</label>
-        <select id={`${idBase}-p`} className="select" style={{ width: 'auto', minHeight: 36 }} value={goal.priority}
+        <select id={`${idBase}-p`} className="select select--compact" value={goal.priority}
           onChange={(e) => store.saveGoal({ ...goal, priority: e.target.value })}>
-          <option value="">No priority</option>
+          <option value="">None</option>
           {PRIORITIES.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
+      </div>
+      <div className="goal-status">
         <label className="sr-only" htmlFor={`${idBase}-s`}>Status for {sp.name}</label>
-        <select id={`${idBase}-s`} className="select" style={{ width: 'auto', minHeight: 36 }} value={goal.status}
+        <select id={`${idBase}-s`} className="select select--compact" value={goal.status}
           onChange={(e) => store.saveGoal({ ...goal, status: e.target.value })}>
           {GOAL_STATUSES.map((s) => <option key={s} value={s}>{s[0].toUpperCase() + s.slice(1)}</option>)}
         </select>
-        <button type="button" className="btn btn--small btn--ghost" onClick={() => confirm(`Remove ${sp.name} from your goals?`) && store.deleteGoal(sp.name)}>
-          Remove<span className="sr-only"> {sp.name}</span>
-        </button>
       </div>
+      <button type="button" className="btn btn--small btn--ghost goal-remove"
+        onClick={() => confirm(`Remove ${sp.name} from your goals?`) && store.deleteGoal(sp.name)}>
+        Remove<span className="sr-only"> {sp.name}</span>
+      </button>
     </article>
   );
 }

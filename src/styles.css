@@ -177,19 +177,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .split span { color: var(--moss); }
 details > summary { cursor: pointer; font-weight: 700; min-height: 40px; display: flex; align-items: center; }
 
-/* ---------- caught & goals lists ---------- */
-.list { display: flex; flex-direction: column; gap: 14px; }
-.entry { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 16px; align-items: start; }
-.entry--gilt { border-color: var(--gilt-line); }
-.entry-tile { width: 96px; height: 96px; border-radius: 14px; background: var(--tile); display: grid; place-items: center; text-decoration: none; }
-.entry--gilt .entry-tile { background: var(--gilt); }
-.entry-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.entry-actions { display: flex; gap: 8px; }
-@media (max-width: 640px) {
-  .entry { grid-template-columns: 72px minmax(0, 1fr); }
-  .entry-tile { width: 72px; height: 72px; }
-  .entry-actions { grid-column: 1 / -1; }
-}
+/* ---------- list pages ---------- */
 .group-title { display: flex; align-items: baseline; gap: 10px; }
 
 /* ---------- banners ---------- */
@@ -224,7 +212,7 @@ details > summary { cursor: pointer; font-weight: 700; min-height: 40px; display
 .owned-list { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
 .owned-head, .owned-row {
   display: grid;
-  grid-template-columns: 64px minmax(170px, 1.5fr) minmax(110px, 0.9fr) 104px minmax(150px, 1.4fr) 72px auto;
+  grid-template-columns: 64px minmax(170px, 1.5fr) minmax(110px, 0.9fr) 104px minmax(150px, 1.4fr) 72px 56px;
   gap: 16px 20px; align-items: center; padding: 12px 20px;
 }
 .owned-head { padding-top: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: 12px; font-weight: 600; color: var(--moss); text-transform: uppercase; letter-spacing: .06em; }
@@ -242,6 +230,7 @@ details > summary { cursor: pointer; font-weight: 700; min-height: 40px; display
 .owned-enc { font-weight: 700; font-size: 15px; }
 .owned-label { display: none; }
 .owned-value { font-weight: 700; }
+.owned-edit, .goal-remove { justify-self: end; }
 .num { text-align: right; align-items: flex-end; }
 .owned-encs, .owned-head .num:nth-child(4) { padding-right: 12px; }
 @media (max-width: 900px) {
@@ -262,3 +251,33 @@ details > summary { cursor: pointer; font-weight: 700; min-height: 40px; display
   .owned-where { grid-area: where; font-size: 13px; }
 }
 
+
+/* ---------- goals list (same look as the owned list) ---------- */
+.goal-head, .goal-row {
+  display: grid;
+  grid-template-columns: 64px minmax(160px, 1.1fr) minmax(200px, 2fr) 104px 116px 72px;
+  gap: 16px 20px; align-items: center; padding: 12px 20px;
+}
+.goal-head { padding-top: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: 12px; font-weight: 600; color: var(--moss); text-transform: uppercase; letter-spacing: .06em; }
+.goal-row { border-bottom: 1px solid #EDF1EE; }
+.goal-row:last-child { border-bottom: 0; }
+.goal-row:hover { background: #FAFBF9; }
+.goal-row--open .owned-tile { background: var(--tile); }
+.goal-spot { color: var(--neutral-ink); }
+.select--compact { min-height: 38px; padding: 0 10px; font-size: 14px; }
+@media (max-width: 900px) {
+  .goal-head { display: none; }
+  .goal-row {
+    grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "tile name remove" "tile spot spot" "tile prio stat";
+    gap: 6px 10px; padding: 14px 16px; align-items: start;
+  }
+  .goal-row .owned-tile { grid-area: tile; width: 56px; height: 56px; }
+  .goal-row .owned-name { grid-area: name; }
+  .goal-spot { grid-area: spot; font-size: 13px; }
+  .goal-priority { grid-area: prio; }
+  .goal-status { grid-area: stat; }
+  .goal-remove { grid-area: remove; justify-self: end; align-self: center; }
+}
+.pill--tag { background: var(--lagoon-soft); color: var(--lagoon-deep); text-transform: capitalize; }
+.chip-count { font-family: var(--mono); font-size: 12px; opacity: .7; margin-left: 4px; }

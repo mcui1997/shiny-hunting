@@ -287,6 +287,12 @@ export function normalizeCatches(input: Record<string, unknown>[], resolve: Reso
       else row.nature = n;
     }
 
+    if (row.tag) {
+      const t = normalizeTag(row.tag);
+      if (t !== row.tag.toLowerCase().trim()) issues.push(`Line ${line}: tag "${row.tag}" was simplified to "${t}".`);
+      row.tag = t;
+    }
+
     if (!/^[A-Za-z0-9_-]{1,20}$/.test(row.id) || usedIds.has(row.id)) row.id = '';
     else usedIds.add(row.id);
     rows.push(row);
@@ -304,6 +310,11 @@ export function normalizeCatches(input: Record<string, unknown>[], resolve: Reso
 }
 
 const pad3 = (n: number) => String(n).padStart(3, '0');
+
+/** Tags are short, lowercase, letters/numbers/spaces/hyphens: "Utility " -> "utility". */
+export function normalizeTag(raw: string): string {
+  return raw.toLowerCase().replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, ' ').trim().slice(0, 24).trim();
+}
 
 export function nextCatchId(rows: CatchRow[]): string {
   const used = new Set(rows.map((r) => r.id));
