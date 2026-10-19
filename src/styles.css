@@ -219,3 +219,46 @@ details > summary { cursor: pointer; font-weight: 700; min-height: 40px; display
 
 .empty { text-align: center; padding: 48px 16px; color: var(--moss); }
 .loading { min-height: 60vh; display: grid; place-items: center; color: var(--moss); }
+
+/* ---------- owned list ---------- */
+.owned-list { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+.owned-head, .owned-row {
+  display: grid;
+  grid-template-columns: 64px minmax(170px, 1.5fr) minmax(110px, 0.9fr) 104px minmax(150px, 1.4fr) 72px auto;
+  gap: 16px 20px; align-items: center; padding: 12px 20px;
+}
+.owned-head { padding-top: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: 12px; font-weight: 600; color: var(--moss); text-transform: uppercase; letter-spacing: .06em; }
+.owned-row { border-bottom: 1px solid #EDF1EE; }
+.owned-row:last-child { border-bottom: 0; }
+.owned-row:hover { background: #FAFBF9; }
+.owned-tile { width: 64px; height: 64px; border-radius: 14px; background: var(--gilt); display: grid; place-items: center; }
+.owned-row--gone .owned-tile { background: var(--tile); }
+.owned-row--gone .owned-tile .sprite { opacity: .6; }
+.owned-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.owned-title { font: 700 18px/1.2 var(--display); color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.owned-title:hover { color: var(--lagoon-deep); }
+.owned-cell { display: flex; flex-direction: column; gap: 1px; font-size: 14px; min-width: 0; }
+.owned-where { color: var(--neutral-ink); overflow-wrap: anywhere; }
+.owned-enc { font-weight: 700; font-size: 15px; }
+.owned-label { display: none; }
+.owned-value { font-weight: 700; }
+.num { text-align: right; align-items: flex-end; }
+.owned-encs, .owned-head .num:nth-child(4) { padding-right: 12px; }
+@media (max-width: 900px) {
+  .owned-head { display: none; }
+  .owned-row {
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+    grid-template-areas: "tile name edit" "tile date date" "tile enc value" "tile where where";
+    gap: 4px 12px; padding: 14px 16px; align-items: start;
+  }
+  .owned-tile { grid-area: tile; width: 56px; height: 56px; }
+  .owned-name { grid-area: name; align-self: center; }
+  .owned-edit { grid-area: edit; align-self: center; }
+  .owned-date { grid-area: date; flex-direction: row; flex-wrap: wrap; gap: 0 6px; color: var(--moss); font-size: 13px; }
+  .owned-date .small { font-size: 13px; }
+  .owned-encs { grid-area: enc; flex-direction: row; gap: 4px; align-items: baseline; text-align: left; }
+  .owned-label { display: inline; }
+  .owned-value { grid-area: value; }
+  .owned-where { grid-area: where; font-size: 13px; }
+}
+
