@@ -99,5 +99,9 @@ export const NATURES = [
   'Rash', 'Relaxed', 'Sassy', 'Serious', 'Timid',
 ];
 
-/** Your current odds. Rows can override with their own `odds` value. */
+/**
+ * Your current odds: PokeMMO's 1/30,000 base with donator status, which you always run.
+ * Rows can override with their own `odds` value.
+ */
 export const DEFAULT_ODDS = 27000;
+export const ODDS_LABEL = '1 in 27,000 with donator status';

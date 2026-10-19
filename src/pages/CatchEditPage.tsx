@@ -5,7 +5,7 @@ import { makeResolver, parseCount, parseDateTime, parseValue } from '../lib/csv'
 import { useDerived } from '../lib/derived';
 import { go, href } from '../lib/router';
 import { useStore } from '../lib/store';
-import { CATCH_COLUMNS, CATCH_STATUSES, DEFAULT_ODDS, METHODS, NATURES, SEASONS, type CatchRow } from '../lib/types';
+import { CATCH_COLUMNS, CATCH_STATUSES, DEFAULT_ODDS, METHODS, NATURES, ODDS_LABEL, SEASONS, type CatchRow } from '../lib/types';
 
 const blank = (): CatchRow => Object.fromEntries(CATCH_COLUMNS.map((c) => [c, ''])) as CatchRow;
 const nowLocal = () => {
@@ -192,7 +192,7 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
           <div className="field">
             <label htmlFor="f-odds">Odds (1 in …)</label>
             <input id="f-odds" className="input mono" inputMode="numeric" placeholder={String(DEFAULT_ODDS)} value={row.odds} onChange={set('odds')} {...inv('odds')} />
-            <span className="field-hint">Leave blank for your current odds.</span>
+            <span className="field-hint">Leave blank for {ODDS_LABEL}.</span>
             {err('odds')}
           </div>
           <div className="field">

@@ -5,7 +5,7 @@ import { useDerived } from '../lib/derived';
 import { href } from '../lib/router';
 import { chronological, countsForLuck, currentSpecies, formatCount, oddsOf } from '../lib/stats';
 import { useStore } from '../lib/store';
-import { DEFAULT_ODDS } from '../lib/types';
+import { DEFAULT_ODDS, ODDS_LABEL } from '../lib/types';
 
 export function StatsPage() {
   const d = useDerived()!;
@@ -34,11 +34,11 @@ export function StatsPage() {
             <div className="facts">
               {s.fastest && <Fact label="Fastest" value={`${formatCount(parseCount(s.fastest.encounters))} enc`} sub={`${currentSpecies(s.fastest)} · ${formatWhen(s.fastest.caught_at).date}`} />}
               {s.slowest && <Fact label="Longest grind" value={`${formatCount(parseCount(s.slowest.encounters))} enc`} sub={`${currentSpecies(s.slowest)} · ${formatWhen(s.slowest.caught_at).date}`} />}
-              <Fact label="Average" value={`${formatCount(Math.round(s.average ?? 0))} enc`} sub={`base odds 1 in ${formatCount(DEFAULT_ODDS)}`} />
+              <Fact label="Average" value={`${formatCount(Math.round(s.average ?? 0))} enc`} sub={ODDS_LABEL} />
             </div>
           </>
         )}
-        <span className="small muted">Traded and bought shinies are left out of luck. Fled ones still count: you found them.</span>
+        <span className="small muted">Odds are {ODDS_LABEL} (PokeMMO's 1 in 30,000 base, boosted by donator status) unless a catch has its own. Traded and bought shinies are left out of luck. Fled ones still count: you found them.</span>
       </section>
 
       {hunts.length > 0 && (
@@ -47,7 +47,7 @@ export function StatsPage() {
           <div className="legend">
             <span><i style={{ background: 'var(--sparkle)' }} />Faster than the odds</span>
             <span><i style={{ background: 'var(--lagoon)' }} />Slower</span>
-            <span><i style={{ background: 'var(--ink)', width: 2 }} />1 in {formatCount(DEFAULT_ODDS)}</span>
+            <span><i style={{ background: 'var(--ink)', width: 2 }} />1 in {formatCount(DEFAULT_ODDS)} (donator)</span>
           </div>
           <div className="bars" role="list">
             {hunts.map((c) => {
