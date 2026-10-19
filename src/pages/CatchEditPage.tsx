@@ -1,11 +1,11 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { Sprite } from '../components/Sprite';
 import { BackLink } from '../components/ui';
-import { LIMITS, makeResolver, parseCount, parseDateTime, parseValue } from '../lib/csv';
+import { LIMITS, makeResolver, normalizeTag, parseCount, parseDateTime, parseValue } from '../lib/csv';
 import { useDerived } from '../lib/derived';
 import { go, href } from '../lib/router';
 import { useStore } from '../lib/store';
-import { CATCH_COLUMNS, CATCH_STATUSES, DEFAULT_ODDS, METHODS, NATURES, ODDS_LABEL, SEASONS, type CatchRow } from '../lib/types';
+import { CATCH_COLUMNS, CATCH_STATUSES, DEFAULT_ODDS, DEFAULT_TAGS, METHODS, NATURES, ODDS_LABEL, SEASONS, type CatchRow } from '../lib/types';
 
 const blank = (): CatchRow => Object.fromEntries(CATCH_COLUMNS.map((c) => [c, ''])) as CatchRow;
 const nowLocal = () => {
@@ -46,6 +46,7 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
   }
 
   const sp = d.game.byName.get(resolve(row.species) ?? '');
+  const tagOptions = [...new Set([...DEFAULT_TAGS, ...store.rows.caught.map((c) => c.tag).filter(Boolean)])].sort();
   const evolveOptions = sp ? d.game.descendants(sp.id) : [];
   const areas = sp ? [...new Set(d.game.family(sp.id).flatMap((f) => [...f.hordes, ...f.singles].map((r) => r.area)))].sort() : [];
   const set = (k: keyof CatchRow) => (e: { target: { value: string } }) => {
@@ -73,6 +74,7 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
     for (const k of ['evolved_on', 'sold_on'] as const) {
       if (row[k] && !parseDateTime(row[k])) er[k] = 'Use a date like 2026-10-20.';
     }
+    out.tag = normalizeTag(row.tag);
     if (out.current_form === out.species) out.current_form = '';
     if (!out.current_form) out.evolved_on = '';
     setErrors(er);
@@ -155,6 +157,12 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
             <select id="f-status" className="select" value={row.status} onChange={set('status')}>
               {CATCH_STATUSES.map((s) => <option key={s} value={s}>{s[0].toUpperCase() + s.slice(1)}</option>)}
             </select>
+          </div>
+          <div className="field">
+            <label htmlFor="f-tag">Category</label>
+            <input id="f-tag" maxLength={24} className="input" list="tag-names" placeholder="utility, cosmetic…" value={row.tag} onChange={set('tag')} />
+            <datalist id="tag-names">{tagOptions.map((t) => <option key={t} value={t} />)}</datalist>
+            <span className="field-hint">Groups your Owned list. Pick one or type your own.</span>
           </div>
           {row.status === 'sold' && (
             <>

@@ -39,6 +39,7 @@
 | `odds` | Blank = 1 in 27,000 (donator status) |
 | `est_value` / `sold_for` | `2000000` or `2M` |
 | `status` | `kept`, `sold`, `traded`, `fled` |
+| `tag` | Category for the Owned filter, e.g. `utility`, `cosmetic`, or your own |
 
 Also: `id`, `form`, `evolved_on`, `location`, `season`, `nature`, `ivs`, `ball`, `sold_on`.
 
