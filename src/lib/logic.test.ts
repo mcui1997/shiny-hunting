@@ -135,14 +135,35 @@ describe('evolutions and goals', () => {
     if (p.kind === 'evolve') expect(p.steps.map((s) => game.name(s.id))).toEqual(['Lampent', 'Chandelure']);
   });
 
-  it('evolving completes the goal and moves ownership to the new form', () => {
+  const stagesBetween = (from: string, to: string) =>
+    (game.path(game.byName.get(from)!.id, game.byName.get(to)!.id) ?? []).slice(0, -1).map((s) => game.name(s.id));
+
+  it('evolving completes the goal and marks every stage it passed through', () => {
     const evolved = { ...litwick, current_form: 'Chandelure' };
     expect(goalProgress({ species: 'Chandelure', priority: '', status: 'planned', notes: '' }, [evolved], game).kind).toBe('done');
-    const dex = new DexIndex([evolved], familyOf);
+    const dex = new DexIndex([evolved], familyOf, stagesBetween);
     expect(dex.get('Chandelure').state).toBe('owned');
-    expect(dex.get('Litwick').state).toBe('caught');
-    expect(dex.get('Lampent').state).toBe('line');
-    expect(dex.get('Chandelure').catches[0].id).toBe('s1');
+    expect(dex.get('Lampent').state).toBe('evolved');
+    expect(dex.get('Litwick').state).toBe('evolved');
+    for (const n of ['Litwick', 'Lampent', 'Chandelure']) expect(dex.get(n).catches[0].id).toBe('s1');
+  });
+
+  it('a one-step evolution marks only the two ends', () => {
+    const dex = new DexIndex([{ ...litwick, current_form: 'Lampent' }], familyOf, stagesBetween);
+    expect(dex.get('Lampent').state).toBe('owned');
+    expect(dex.get('Litwick').state).toBe('evolved');
+    expect(dex.get('Chandelure').state).toBe('line');
+  });
+
+  it('a sold shiny is "gone" at every stage, not owned', () => {
+    const dex = new DexIndex([make({ species: 'Aron', current_form: 'Aggron', status: 'sold' })], familyOf, stagesBetween);
+    for (const n of ['Aron', 'Lairon', 'Aggron']) expect(dex.get(n).state).toBe('gone');
+  });
+
+  it('your exported caught.csv: every evolution chain is valid', () => {
+    for (const c of repoCaught.rows.filter((r) => r.current_form)) {
+      expect(game.canBecome(game.byName.get(c.species)!.id, game.byName.get(c.current_form)!.id)).toBe(true);
+    }
   });
 
   it('a sold or fled shiny never completes a goal', () => {

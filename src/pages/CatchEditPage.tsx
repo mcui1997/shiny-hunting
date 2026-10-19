@@ -207,10 +207,14 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
             <legend className="h3" style={{ marginBottom: 12 }}>Evolution</legend>
             <div className="field">
               <label htmlFor="f-evo">Now a</label>
-              <select id="f-evo" className="select" value={row.current_form} onChange={set('current_form')}>
+              <select id="f-evo" className="select" value={row.current_form} onChange={set('current_form')} aria-describedby="f-evo-hint">
                 <option value="">Not evolved ({sp?.name})</option>
-                {evolveOptions.map((o) => <option key={o.id} value={o.name}>{o.name}</option>)}
+                {evolveOptions.map((o) => {
+                  const via = sp ? (d.game.path(sp.id, o.id) ?? []).slice(0, -1).map((s) => d.game.name(s.id)) : [];
+                  return <option key={o.id} value={o.name}>{o.name}{via.length ? ` (via ${via.join(', ')})` : ''}</option>;
+                })}
               </select>
+              <span id="f-evo-hint" className="field-hint">Pick its final stage. Every stage in between is marked in your dex too.</span>
             </div>
             {row.current_form && (
               <div className="field">

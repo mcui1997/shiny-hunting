@@ -6,11 +6,11 @@ import { useDerived } from '../lib/derived';
 import { bestSpotLabel, hordeSpots } from '../lib/game';
 import { usePref } from '../lib/prefs';
 import { href } from '../lib/router';
-import { formatCount } from '../lib/stats';
+import { currentSpecies, formatCount, isMineState, isOwnedState } from '../lib/stats';
 import { SEASONS, type Season, type Species } from '../lib/types';
 
 type Filter = 'all' | 'mine' | 'goals' | 'missing';
-const FILTERS: [Filter, string][] = [['all', 'All'], ['mine', 'Caught'], ['goals', 'Goals'], ['missing', 'Missing']];
+const FILTERS: [Filter, string][] = [['all', 'All'], ['mine', 'Owned'], ['goals', 'Goals'], ['missing', 'Missing']];
 const PAGE = 120;
 
 export function DexPage() {
@@ -27,7 +27,7 @@ export function DexPage() {
     const q = query.trim().toLowerCase();
     return d.game.list.filter((sp) => {
       const entry = d.dex.get(sp.name);
-      const mine = entry.state === 'owned' || entry.state === 'caught';
+      const mine = isOwnedState(entry.state);
       if (filter === 'mine' && !mine) return false;
       if (filter === 'goals' && !d.goals.has(sp.name)) return false;
       if (filter === 'missing' && (mine || !sp.obtainable)) return false;
@@ -113,14 +113,16 @@ function DexCard({ sp, shiny }: { sp: Species; shiny: boolean }) {
   const entry = d.dex.get(sp.name);
   const goal = d.goals.get(sp.name);
   const progress = d.progress.get(sp.name);
-  const mine = entry.state === 'owned' || entry.state === 'caught';
+  const mine = isMineState(entry.state);
   const latest = entry.catches[0];
 
   let sub: string | null = null;
   if (latest) {
     const enc = latest.encounters ? `${formatCount(Number(latest.encounters))} enc · ` : '';
+    const now = currentSpecies(latest);
     sub = `${enc}${formatWhen(latest.caught_at).date}`;
-    if (latest.current_form === sp.name && latest.species !== sp.name) sub = `Caught as ${latest.species}`;
+    if (now === sp.name && latest.species !== sp.name) sub = `Caught as ${latest.species}`;
+    else if (now !== sp.name) sub = `Evolved into ${now}`;
   } else if (progress?.kind === 'evolve') {
     sub = `Have ${progress.from}`;
   } else if (!sp.obtainable && sp.hordes.length + sp.singles.length + sp.rare.length === 0) {
@@ -135,11 +137,11 @@ function DexCard({ sp, shiny }: { sp: Species; shiny: boolean }) {
     <a className={cls} href={href.species(sp.id)}>
       <div className="card-top">
         <span className="mono small muted">{dexNo(sp.id)}</span>
-        <StatePill state={entry.state} goal={goal} progress={progress} />
+        <StatePill state={entry.state} goal={goal} progress={progress} goneStatus={latest?.status} />
       </div>
       <div className="card-tile">
         <Sprite id={sp.id} name={sp.name} shiny={shiny} size={104} />
-        {mine && shiny && <SparkleIcon className="sparkle" />}
+        {isOwnedState(entry.state) && shiny && <SparkleIcon className="sparkle" />}
       </div>
       <div>
         <div className="card-name">{sp.name}</div>

@@ -84,25 +84,39 @@ export function summarize(rows: CatchRow[]): Summary {
 }
 
 /** Where a species stands in your collection. */
-export type DexState = 'owned' | 'caught' | 'line' | 'none';
+export type DexState = 'owned' | 'evolved' | 'gone' | 'line' | 'none';
+
+/** Owned now, or a stage one of your current shinies passed through. */
+export const isOwnedState = (s: DexState) => s === 'owned' || s === 'evolved';
+/** Any shiny of yours has ever been this species. */
+export const isMineState = (s: DexState) => s === 'owned' || s === 'evolved' || s === 'gone';
 
 export interface DexEntry {
   state: DexState;
-  /** Catches whose current form is this species, or that were caught as it. Newest first. */
+  /** Catches that were ever this species (caught as, evolved through, or now). Newest first. */
   catches: CatchRow[];
 }
 
 /**
- * owned  — you have one right now in this form
- * caught — you caught one as this species (since evolved, sold, traded or fled)
- * line   — you hold a shiny elsewhere in its evolution family
+ * owned   — you have one right now in this form
+ * evolved — one of your shinies was this species and evolved on (Litwick and Lampent, once it's a Chandelure)
+ * gone    — your shiny of this species was sold, traded or fled
+ * line    — you hold a shiny elsewhere in its evolution family
  */
 export class DexIndex {
   private readonly entries = new Map<string, DexEntry>();
   private readonly ownedFamilies = new Set<number>();
 
-  constructor(rows: CatchRow[], private readonly familyOf: (name: string) => number | undefined) {
-    const rank: Record<DexState, number> = { none: 0, line: 1, caught: 2, owned: 3 };
+  /**
+   * `stagesBetween(from, to)` lists the species a shiny passed through when evolving,
+   * excluding both ends (Litwick -> Chandelure gives ['Lampent']).
+   */
+  constructor(
+    rows: CatchRow[],
+    private readonly familyOf: (name: string) => number | undefined,
+    stagesBetween: (from: string, to: string) => string[] = () => [],
+  ) {
+    const rank: Record<DexState, number> = { none: 0, line: 1, gone: 2, evolved: 3, owned: 4 };
     const get = (n: string) => {
       let e = this.entries.get(n);
       if (!e) { e = { state: 'none', catches: [] }; this.entries.set(n, e); }
@@ -111,13 +125,15 @@ export class DexIndex {
     const bump = (n: string, s: DexState) => { const e = get(n); if (rank[s] > rank[e.state]) e.state = s; };
     for (const c of [...rows].sort((a, b) => b.caught_at.localeCompare(a.caught_at))) {
       const cur = currentSpecies(c);
-      get(c.species).catches.push(c);
-      if (cur !== c.species) get(cur).catches.push(c);
-      bump(c.species, 'caught');
+      const earlier = cur === c.species ? [] : [c.species, ...stagesBetween(c.species, cur)];
+      for (const n of [...earlier, cur]) get(n).catches.push(c);
       if (isOwned(c)) {
         bump(cur, 'owned');
+        for (const n of earlier) bump(n, 'evolved');
         const fam = familyOf(cur);
         if (fam !== undefined) this.ownedFamilies.add(fam);
+      } else {
+        for (const n of [...earlier, cur]) bump(n, 'gone');
       }
     }
   }
