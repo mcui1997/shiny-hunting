@@ -33,11 +33,6 @@ function EmptyFact({ label, id }: { label: string; id: string }) {
   );
 }
 
-export function screenshotUrl(s: string) {
-  if (/^https?:\/\//.test(s)) return s;
-  return `${import.meta.env.BASE_URL}screenshots/${s.replace(/^\/+/, '')}`;
-}
-
 export function CatchFacts({ c }: { c: CatchRow }) {
   const when = formatWhen(c.caught_at);
   const enc = parseCount(c.encounters);

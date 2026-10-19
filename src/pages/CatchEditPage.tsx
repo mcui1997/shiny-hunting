@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { Sprite } from '../components/Sprite';
 import { BackLink } from '../components/ui';
-import { makeResolver, parseCount, parseDateTime, parseValue } from '../lib/csv';
+import { LIMITS, makeResolver, parseCount, parseDateTime, parseValue } from '../lib/csv';
 import { useDerived } from '../lib/derived';
 import { go, href } from '../lib/router';
 import { useStore } from '../lib/store';
@@ -110,7 +110,7 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
         <div className="form-grid">
           <div className="field">
             <label htmlFor="f-species">Pokémon (as caught)</label>
-            <input id="f-species" className="input" list="species-names" value={row.species} onChange={set('species')} required {...inv('species')} />
+            <input id="f-species" maxLength={LIMITS.shortText} className="input" list="species-names" value={row.species} onChange={set('species')} required {...inv('species')} />
             {err('species')}
           </div>
           <div className="field">
@@ -120,7 +120,7 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
           </div>
           <div className="field">
             <label htmlFor="f-enc">Encounters since your last shiny</label>
-            <input id="f-enc" className="input mono" inputMode="numeric" value={row.encounters} onChange={set('encounters')} {...inv('encounters')} />
+            <input id="f-enc" maxLength={LIMITS.shortText} className="input mono" inputMode="numeric" value={row.encounters} onChange={set('encounters')} {...inv('encounters')} />
             {err('encounters')}
           </div>
           <div className="field">
@@ -132,7 +132,7 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
           </div>
           <div className="field">
             <label htmlFor="f-loc">Location</label>
-            <input id="f-loc" className="input" list="area-names" value={row.location} onChange={set('location')} />
+            <input id="f-loc" maxLength={LIMITS.shortText} className="input" list="area-names" value={row.location} onChange={set('location')} />
             <datalist id="area-names">{areas.map((a) => <option key={a} value={a} />)}</datalist>
           </div>
           <div className="field">
@@ -147,7 +147,7 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
         <div className="form-grid">
           <div className="field">
             <label htmlFor="f-value">Estimated value</label>
-            <input id="f-value" className="input" placeholder="2M" value={row.est_value} onChange={set('est_value')} {...inv('est_value')} />
+            <input id="f-value" maxLength={LIMITS.shortText} className="input" placeholder="2M" value={row.est_value} onChange={set('est_value')} {...inv('est_value')} />
             {err('est_value')}
           </div>
           <div className="field">
@@ -160,7 +160,7 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
             <>
               <div className="field">
                 <label htmlFor="f-sold">Sold for</label>
-                <input id="f-sold" className="input" placeholder="3.5M" value={row.sold_for} onChange={set('sold_for')} {...inv('sold_for')} />
+                <input id="f-sold" maxLength={LIMITS.shortText} className="input" placeholder="3.5M" value={row.sold_for} onChange={set('sold_for')} {...inv('sold_for')} />
                 {err('sold_for')}
               </div>
               <div className="field">
@@ -179,26 +179,21 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
           </div>
           <div className="field">
             <label htmlFor="f-ivs">IVs</label>
-            <input id="f-ivs" className="input mono" placeholder="31/31/x/31/x/31" value={row.ivs} onChange={set('ivs')} />
+            <input id="f-ivs" maxLength={LIMITS.shortText} className="input mono" placeholder="31/31/x/31/x/31" value={row.ivs} onChange={set('ivs')} />
           </div>
           <div className="field">
             <label htmlFor="f-ball">Ball</label>
-            <input id="f-ball" className="input" value={row.ball} onChange={set('ball')} />
+            <input id="f-ball" maxLength={LIMITS.shortText} className="input" value={row.ball} onChange={set('ball')} />
           </div>
           <div className="field">
             <label htmlFor="f-form">Form</label>
-            <input id="f-form" className="input" placeholder="Only for Unown, Deerling, etc." value={row.form} onChange={set('form')} />
+            <input id="f-form" maxLength={LIMITS.shortText} className="input" placeholder="Only for Unown, Deerling, etc." value={row.form} onChange={set('form')} />
           </div>
           <div className="field">
             <label htmlFor="f-odds">Odds (1 in …)</label>
-            <input id="f-odds" className="input mono" inputMode="numeric" placeholder={String(DEFAULT_ODDS)} value={row.odds} onChange={set('odds')} {...inv('odds')} />
+            <input id="f-odds" maxLength={LIMITS.shortText} className="input mono" inputMode="numeric" placeholder={String(DEFAULT_ODDS)} value={row.odds} onChange={set('odds')} {...inv('odds')} />
             <span className="field-hint">Leave blank for {ODDS_LABEL}.</span>
             {err('odds')}
-          </div>
-          <div className="field">
-            <label htmlFor="f-shot">Screenshot</label>
-            <input id="f-shot" className="input" placeholder="nidorino.png or a link" value={row.screenshot} onChange={set('screenshot')} />
-            <span className="field-hint">File name in the repo's screenshots folder, or a full link.</span>
           </div>
         </div>
 
@@ -228,7 +223,7 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
 
         <div className="field">
           <label htmlFor="f-thoughts">Thoughts</label>
-          <textarea id="f-thoughts" className="textarea" rows={4} value={row.thoughts} onChange={set('thoughts')} />
+          <textarea id="f-thoughts" className="textarea" rows={4} maxLength={LIMITS.longText} value={row.thoughts} onChange={set('thoughts')} />
         </div>
 
         <div className="form-actions">
