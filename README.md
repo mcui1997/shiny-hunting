@@ -14,33 +14,47 @@
 - **Dex** of all 649 Gen 1–5 Pokémon in shiny and normal, searchable, with season and solo-horde filters
 - **Hunt plans** for every species: horde splits by season and time of day, including earlier evolutions
 - **Your log** of catches with evolutions, categories, and luck against 1 in 27,000 (donator status)
-- **Edit on the site**, then export CSV and commit. No backend.
-- **Safe to import anyone's CSV:** rows are validated, exports are spreadsheet-safe, and the page runs under a strict Content Security Policy
+- **Edit on the site**, then export `tracker.json` and commit. No backend.
+- **Safe to import any file:** every entry is validated and size-capped, and the page runs under a strict Content Security Policy
 
 ## Your data
 
-| File | What's in it |
-|---|---|
-| `public/data/caught.csv` | One row per shiny |
-| `public/data/goals.csv` | Targets, priority, status |
-| `public/data/notes.csv` | Your own hunt notes |
+Everything lives in one file, `public/data/tracker.json`. Each entry sits on its own line, blank fields are left out, and encounters are numbers:
+
+```json
+{
+  "version": 1,
+  "caught": [
+    {"id":"s001","species":"Aron","current_form":"Aggron","caught_at":"2026-09-23 21:04","encounters":26321,"method":"5x horde","status":"kept","tag":"cosmetic"}
+  ],
+  "goals": [
+    {"species":"Xatu","priority":"P1","status":"hunting"}
+  ],
+  "notes": [
+    {"species":"Litwick","notes":"Celestial Tower, summer nights"}
+  ]
+}
+```
+
+Import on the site replaces all three lists; Export downloads the whole file.
 
 <details>
-<summary><b>caught.csv columns</b></summary>
+<summary><b>caught fields</b></summary>
 
 <br>
 
-| Column | Notes |
+| Field | Notes |
 |---|---|
 | `species` / `current_form` | What you caught / what it is now. Put the final stage only; stages in between are marked too. |
 | `caught_at` | `2026-10-17 19:14` |
 | `encounters` | Since your previous shiny |
 | `method` | `5x horde`, `3x horde`, `single`, `fishing`, `safari`, `egg`, `traded`, `bought`, `other` |
-| `odds` | Blank = 1 in 27,000 (donator status) |
+| `odds` | Leave out for 1 in 27,000 (donator status) |
 | `status` | `kept`, `sold`, `traded`, `fled` |
 | `tag` | Category for the Owned filter, e.g. `utility`, `cosmetic`, or your own |
 
 Also: `id`, `form`, `evolved_on`, `location`, `season`, `nature`, `ivs`, `ball`, `sold_on`.
+Goals have `species`, `priority` (`P1`–`P3`), `status` (`planned`, `hunting`, `paused`), `notes`.
 
 </details>
 

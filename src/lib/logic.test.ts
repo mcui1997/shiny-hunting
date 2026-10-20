@@ -1,24 +1,33 @@
 import { readFileSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { makeResolver, normalizeCatches, parseCsv } from './csv';
+import { makeResolver, normalizeCatches, normalizeGoals, normalizeNotes, parseTracker, toTrackerJson } from './data';
 import { Game, hordeSpots, shareIn } from './game';
 import { goalProgress } from './goals';
 import { chanceWithin, DexIndex, poissonAtLeast, summarize } from './stats';
 import { CATCH_COLUMNS, type CatchRow, type GameData } from './types';
 
 const game = new Game(JSON.parse(readFileSync(resolvePath(__dirname, '../../public/data/pokemon.json'), 'utf8')) as GameData);
-const repoCaught = normalizeCatches(
-  parseCsv(readFileSync(resolvePath(__dirname, '../../public/data/caught.csv'), 'utf8')).rows,
-  makeResolver(game.names),
-);
+const trackerText = readFileSync(resolvePath(__dirname, '../../public/data/tracker.json'), 'utf8');
+const repoRaw = parseTracker(trackerText);
+const repoCaught = normalizeCatches(repoRaw.caught, makeResolver(game.names));
+const repoGoals = normalizeGoals(repoRaw.goals, makeResolver(game.names));
+const repoNotes = normalizeNotes(repoRaw.notes, makeResolver(game.names));
 
 const make = (over: Partial<CatchRow>): CatchRow => ({ ...(Object.fromEntries(CATCH_COLUMNS.map((c) => [c, ''])) as CatchRow), status: 'kept', ...over });
 
 describe('repo data', () => {
-  it('caught.csv parses without issues', () => {
+  it('tracker.json reads without issues', () => {
+    expect(repoRaw.issues).toEqual([]);
     expect(repoCaught.issues).toEqual([]);
+    expect(repoGoals.issues).toEqual([]);
+    expect(repoNotes.issues).toEqual([]);
     expect(repoCaught.rows).toHaveLength(9);
+    expect(repoGoals.rows).toHaveLength(55);
+  });
+
+  it('tracker.json is exactly what the site would export', () => {
+    expect(toTrackerJson({ caught: repoCaught.rows, goals: repoGoals.rows, notes: repoNotes.rows })).toBe(trackerText);
   });
 
   it('matches the totals from the original sheet', () => {
@@ -149,7 +158,7 @@ describe('evolutions and goals', () => {
     for (const n of ['Aron', 'Lairon', 'Aggron']) expect(dex.get(n).state).toBe('gone');
   });
 
-  it('your exported caught.csv: every evolution chain is valid', () => {
+  it('your tracker.json: every evolution chain is valid', () => {
     for (const c of repoCaught.rows.filter((r) => r.current_form)) {
       expect(game.canBecome(game.byName.get(c.species)!.id, game.byName.get(c.current_form)!.id)).toBe(true);
     }

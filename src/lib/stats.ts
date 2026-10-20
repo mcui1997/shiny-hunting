@@ -1,4 +1,4 @@
-import { parseCount } from './csv';
+import { parseCount } from './data';
 import { DEFAULT_ODDS, NON_HUNT_METHODS, type CatchRow } from './types';
 
 export const oddsOf = (c: CatchRow) => parseCount(c.odds) ?? DEFAULT_ODDS;

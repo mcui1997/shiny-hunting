@@ -4,7 +4,7 @@ import { chronological, DexIndex, summarize } from './stats';
 import { useStore } from './store';
 import type { GoalRow } from './types';
 
-/** Everything computed from your CSVs + the game data, memoized together. */
+/** Everything computed from your tracker.json + the game data, memoized together. */
 export function useDerived() {
   const { game, rows } = useStore();
   return useMemo(() => {

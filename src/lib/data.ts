@@ -1,4 +1,3 @@
-import Papa from 'papaparse';
 import {
   CATCH_COLUMNS, CATCH_STATUSES, GOAL_COLUMNS, GOAL_STATUSES, METHODS, NATURES, NOTE_COLUMNS,
   SEASONS, type CatchRow, type CatchStatus, type FileKey, type GoalRow, type NoteRow,
@@ -8,7 +7,7 @@ import {
 // Anything past these is either a mistake or hostile; the site refuses or trims instead of hanging.
 
 export const LIMITS = {
-  /** Largest CSV the importer will read. Your real files are a few KB. */
+  /** Largest file the importer will read. Your real file is a few KB. */
   fileBytes: 1_000_000,
   rows: 5_000,
   /** Longest notes text, in characters. */
@@ -38,73 +37,99 @@ export function cleanText(raw: unknown, max: number, multiline = false): { text:
   return { text: s, trimmed: false };
 }
 
-// ---------- spreadsheet formula injection ----------
-// A cell starting with = + - @ (or a tab / carriage return) runs as a formula when the CSV is
-// opened in Google Sheets or Excel, which can fetch URLs and leak the sheet. On export those
-// cells get a leading apostrophe so spreadsheets show them as text; on import it's removed again.
+// ---------- tracker.json ----------
+// All of your data lives in one file: { version, caught: [...], goals: [...], notes: [...] }.
+// Blank fields are left out, encounters and odds are numbers. Everything read from it goes
+// through the normalizers below, exactly like edits made on the site.
 
-const FORMULA_START = /^[=+\-@\t\r]/;
-export const escapeCell = (s: string) => (FORMULA_START.test(s) ? `'${s}` : s);
-export const unescapeCell = (s: string) => (/^'[=+\-@\t\r]/.test(s) ? s.slice(1) : s);
+export const FORMAT_VERSION = 1;
+export const SECTIONS: readonly FileKey[] = ['caught', 'goals', 'notes'];
 
-// ---------- parsing ----------
-
-export interface Parsed {
-  fields: string[];
-  rows: Record<string, string>[];
+export interface RawTracker {
+  caught: Record<string, string>[];
+  goals: Record<string, string>[];
+  notes: Record<string, string>[];
+  issues: string[];
 }
 
-/** Header cells are matched loosely: "Caught At" and "caught_at" are the same column. */
-export const headerKey = (h: string) =>
-  cleanText(h, 60).text.toLowerCase().replace(/[.?]/g, '').replace(/[\s-]+/g, '_');
+export const SECTION_LABEL: Record<FileKey, string> = { caught: 'Caught', goals: 'Goals', notes: 'Notes' };
 
-const HEADER_ALIASES: Record<string, string> = {
-  pokemon: 'species', 'pokémon': 'species',
-  capture_date: 'caught_at', date: 'caught_at', caught: 'caught_at', sold: 'status',
-};
+const isPlainObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
-/** Only plain snake_case names are kept as columns; anything else (including `__proto__`) is dropped. */
-const SAFE_FIELD = /^[a-z][a-z0-9_]{0,39}$/;
-const RESERVED = new Set(['constructor', 'prototype', 'hasownproperty', 'tostring', 'valueof', 'isprototypeof']);
+/** Copy only known fields with plain values. Anything nested or unexpected is dropped and reported. */
+function flatEntry(raw: unknown, cols: readonly string[], where: string, issues: string[]): Record<string, string> | null {
+  if (!isPlainObject(raw)) {
+    issues.push(`${where}: isn't an object. Skipped it.`);
+    return null;
+  }
+  const out: Record<string, string> = Object.create(null);
+  for (const c of cols) {
+    if (!Object.prototype.hasOwnProperty.call(raw, c)) { out[c] = ''; continue; }
+    const v = raw[c];
+    if (typeof v === 'string') out[c] = v;
+    else if (typeof v === 'number' && Number.isFinite(v)) out[c] = String(v);
+    else if (v === null || v === undefined) out[c] = '';
+    else { issues.push(`${where}: ${c} has an unexpected value. Cleared it.`); out[c] = ''; }
+  }
+  return out;
+}
 
-export function parseCsv(text: string): Parsed {
+/** Parse tracker.json text into flat string rows. Not validated yet: run the normalizers next. */
+export function parseTracker(text: string): RawTracker {
   if (text.length > LIMITS.fileBytes) {
     throw new ImportError(`That file is ${Math.round(text.length / 1024)} KB. The limit is ${LIMITS.fileBytes / 1_000_000} MB.`);
   }
-  const result = Papa.parse<Record<string, unknown>>(text.replace(/^﻿/, ''), {
-    header: true,
-    skipEmptyLines: 'greedy',
-    preview: LIMITS.rows + 1,
-    transformHeader: (h) => {
-      const k = headerKey(h);
-      return HEADER_ALIASES[k] ?? k;
-    },
-  });
-  const fields = [...new Set((result.meta.fields ?? []).filter((f) => SAFE_FIELD.test(f) && !RESERVED.has(f)))];
-  const rows = result.data.map((r) => {
-    const out: Record<string, string> = Object.create(null);
-    for (const f of fields) {
-      const v = Object.prototype.hasOwnProperty.call(r, f) ? r[f] : '';
-      out[f] = unescapeCell(typeof v === 'string' ? v : v === null || v === undefined ? '' : String(v)).trim();
+  let data: unknown;
+  try {
+    data = JSON.parse(text.replace(/^﻿/, ''));
+  } catch {
+    throw new ImportError("That file isn't valid JSON.");
+  }
+  if (!isPlainObject(data) || !SECTIONS.some((s) => Object.prototype.hasOwnProperty.call(data, s))) {
+    throw new ImportError("That doesn't look like a tracker.json (no caught, goals or notes).");
+  }
+  if ('version' in data && (typeof data.version !== 'number' || data.version > FORMAT_VERSION)) {
+    throw new ImportError(`That file is format version ${String(data.version).slice(0, 10)}; this site reads version ${FORMAT_VERSION}.`);
+  }
+  const issues: string[] = [];
+  const out: RawTracker = { caught: [], goals: [], notes: [], issues };
+  for (const s of SECTIONS) {
+    if (!Object.prototype.hasOwnProperty.call(data, s)) continue;
+    const list = data[s];
+    if (!Array.isArray(list)) { issues.push(`${SECTION_LABEL[s]}: should be a list. Ignored it.`); continue; }
+    let items = list;
+    if (items.length > LIMITS.rows) {
+      issues.push(`${SECTION_LABEL[s]}: only the first ${LIMITS.rows.toLocaleString('en-US')} entries were read.`);
+      items = items.slice(0, LIMITS.rows);
     }
-    return out;
-  });
-  return { fields, rows };
+    items.forEach((raw, i) => {
+      const row = flatEntry(raw, COLUMNS[s], `${SECTION_LABEL[s]} entry ${i + 1}`, issues);
+      if (row) out[s].push(row);
+    });
+  }
+  return out;
 }
 
-export function detectFile(fields: string[]): FileKey | null {
-  const has = (f: string) => fields.includes(f);
-  if (has('species') && (has('encounters') || has('caught_at'))) return 'caught';
-  if (has('species') && (has('priority') || (has('status') && !has('encounters')))) return 'goals';
-  if (has('species') && has('notes')) return 'notes';
-  return null;
+const NUMBER_FIELDS = new Set(['encounters', 'odds']);
+
+/** Blank fields left out; counts written as numbers. */
+function compact(row: Record<string, string>, cols: readonly string[]) {
+  const o: Record<string, string | number> = {};
+  for (const c of cols) {
+    const v = row[c] ?? '';
+    if (v === '') continue;
+    o[c] = NUMBER_FIELDS.has(c) && /^\d{1,10}$/.test(v) ? Number(v) : v;
+  }
+  return o;
 }
 
-export function toCsv(rows: Record<string, string>[], columns: readonly string[]): string {
-  return Papa.unparse(
-    { fields: [...columns], data: rows.map((r) => columns.map((c) => escapeCell(String(r[c] ?? '')))) },
-    { newline: '\n', quotes: false, escapeFormulae: false },
-  ) + '\n';
+/** tracker.json text, one entry per line so GitHub diffs show exactly which catch changed. */
+export function toTrackerJson(rows: { caught: CatchRow[]; goals: GoalRow[]; notes: NoteRow[] }): string {
+  const list = (s: FileKey) => {
+    const items = (rows[s] as Record<string, string>[]).map((r) => '    ' + JSON.stringify(compact(r, COLUMNS[s])));
+    return items.length ? `[\n${items.join(',\n')}\n  ]` : '[]';
+  };
+  return `{\n  "version": ${FORMAT_VERSION},\n${SECTIONS.map((s) => `  "${s}": ${list(s)}`).join(',\n')}\n}\n`;
 }
 
 // ---------- value parsing ----------
@@ -192,7 +217,7 @@ function pick<K extends string>(raw: Record<string, unknown>, cols: readonly K[]
     const v = Object.prototype.hasOwnProperty.call(raw, c) ? raw[c] : '';
     const long = LONG_FIELDS.has(c);
     const { text, trimmed } = cleanText(v, long ? LIMITS.longText : LIMITS.shortText, long);
-    if (trimmed) issues.push(`Line ${line}: ${c} was longer than ${long ? LIMITS.longText : LIMITS.shortText} characters and was cut short.`);
+    if (trimmed) issues.push(`Entry ${line}: ${c} was longer than ${long ? LIMITS.longText : LIMITS.shortText} characters and was cut short.`);
     row[c] = text;
   }
   return row;
@@ -200,7 +225,7 @@ function pick<K extends string>(raw: Record<string, unknown>, cols: readonly K[]
 
 function tooMany(input: unknown[], issues: string[]) {
   if (input.length > LIMITS.rows) {
-    issues.push(`Only the first ${LIMITS.rows.toLocaleString('en-US')} rows were read.`);
+    issues.push(`Only the first ${LIMITS.rows.toLocaleString('en-US')} entries were read.`);
     return input.slice(0, LIMITS.rows);
   }
   return input;
@@ -211,18 +236,18 @@ export function normalizeCatches(input: Record<string, unknown>[], resolve: Reso
   const usedIds = new Set<string>();
   const rows: CatchRow[] = [];
   (tooMany(input, issues) as Record<string, unknown>[]).forEach((raw, i) => {
-    const line = i + 2; // header is line 1
+    const line = i + 1;
     if (!raw || typeof raw !== 'object') return;
     const row = pick(raw, CATCH_COLUMNS, line, issues);
     if (!row.species && !row.caught_at && !row.encounters) return; // fully blank / totals row
     if (/^total/i.test(row.species)) return;
 
     const sp = resolve(row.species);
-    if (!sp) issues.push(`Line ${line}: "${row.species}" isn't a Pokémon name I recognize.`);
+    if (!sp) issues.push(`Entry ${line}: "${row.species}" isn't a Pokémon name I recognize.`);
     else row.species = sp;
     if (row.current_form) {
       const cf = resolve(row.current_form);
-      if (!cf) issues.push(`Line ${line}: current form "${row.current_form}" isn't a Pokémon name I recognize.`);
+      if (!cf) issues.push(`Entry ${line}: current form "${row.current_form}" isn't a Pokémon name I recognize.`);
       else row.current_form = cf === row.species ? '' : cf;
     }
 
@@ -230,16 +255,16 @@ export function normalizeCatches(input: Record<string, unknown>[], resolve: Reso
       if (!row[c]) continue;
       const d = parseDateTime(row[c]);
       if (d) row[c] = d;
-      else { issues.push(`Line ${line}: couldn't read the date "${row[c]}" in ${c}. Cleared it.`); row[c] = ''; }
+      else { issues.push(`Entry ${line}: couldn't read the date "${row[c]}" in ${c}. Cleared it.`); row[c] = ''; }
     }
     if (row.encounters) {
       const n = parseCount(row.encounters);
-      if (n === null) { issues.push(`Line ${line}: encounters "${row.encounters}" isn't a whole number. Cleared it.`); row.encounters = ''; }
+      if (n === null) { issues.push(`Entry ${line}: encounters "${row.encounters}" isn't a whole number. Cleared it.`); row.encounters = ''; }
       else row.encounters = String(n);
     }
     if (row.odds) {
       const n = parseCount(row.odds);
-      if (n === null || n < LIMITS.minOdds) { issues.push(`Line ${line}: odds "${row.odds}" should be a number like 27000. Using the default.`); row.odds = ''; }
+      if (n === null || n < LIMITS.minOdds) { issues.push(`Entry ${line}: odds "${row.odds}" should be a number like 27000. Using the default.`); row.odds = ''; }
       else row.odds = String(n);
     }
 
@@ -249,29 +274,29 @@ export function normalizeCatches(input: Record<string, unknown>[], resolve: Reso
     else if (st === 'no' || st === '') row.status = 'kept';
     else if ((CATCH_STATUSES as string[]).includes(st)) row.status = st as CatchStatus;
     else {
-      issues.push(`Line ${line}: status "${row.status}" should be kept, sold, traded or fled. Treated as kept.`);
+      issues.push(`Entry ${line}: status "${row.status}" should be kept, sold, traded or fled. Treated as kept.`);
       row.status = 'kept';
     }
 
     row.method = row.method.toLowerCase();
     if (row.method && !(METHODS as readonly string[]).includes(row.method)) {
-      issues.push(`Line ${line}: method "${row.method}" isn't one of ${METHODS.join(', ')}. Set to other.`);
+      issues.push(`Entry ${line}: method "${row.method}" isn't one of ${METHODS.join(', ')}. Set to other.`);
       row.method = 'other';
     }
     if (row.season) {
       const s = SEASONS.find((x) => x.toLowerCase() === row.season.toLowerCase());
-      if (!s) { issues.push(`Line ${line}: season "${row.season}" isn't Spring, Summer, Autumn or Winter. Cleared it.`); row.season = ''; }
+      if (!s) { issues.push(`Entry ${line}: season "${row.season}" isn't Spring, Summer, Autumn or Winter. Cleared it.`); row.season = ''; }
       else row.season = s;
     }
     if (row.nature) {
       const n = NATURES.find((x) => x.toLowerCase() === row.nature.toLowerCase());
-      if (!n) { issues.push(`Line ${line}: nature "${row.nature}" isn't a nature I know. Cleared it.`); row.nature = ''; }
+      if (!n) { issues.push(`Entry ${line}: nature "${row.nature}" isn't a nature I know. Cleared it.`); row.nature = ''; }
       else row.nature = n;
     }
 
     if (row.tag) {
       const t = normalizeTag(row.tag);
-      if (t !== row.tag.toLowerCase().trim()) issues.push(`Line ${line}: tag "${row.tag}" was simplified to "${t}".`);
+      if (t !== row.tag.toLowerCase().trim()) issues.push(`Entry ${line}: tag "${row.tag}" was simplified to "${t}".`);
       row.tag = t;
     }
 
@@ -311,16 +336,16 @@ export function normalizeGoals(input: Record<string, unknown>[], resolve: Resolv
   const rows: GoalRow[] = [];
   (tooMany(input, issues) as Record<string, unknown>[]).forEach((raw, i) => {
     if (!raw || typeof raw !== 'object') return;
-    const row = pick(raw, GOAL_COLUMNS, i + 2, issues);
+    const row = pick(raw, GOAL_COLUMNS, i + 1, issues);
     if (!row.species) return;
     const sp = resolve(row.species);
-    if (!sp) { issues.push(`Line ${i + 2}: "${row.species}" isn't a Pokémon name I recognize.`); return; }
-    if (seen.has(sp)) { issues.push(`Line ${i + 2}: ${sp} is listed twice; kept the first.`); return; }
+    if (!sp) { issues.push(`Entry ${i + 1}: "${row.species}" isn't a Pokémon name I recognize.`); return; }
+    if (seen.has(sp)) { issues.push(`Entry ${i + 1}: ${sp} is listed twice; kept the first.`); return; }
     seen.add(sp);
     row.species = sp;
     row.priority = row.priority.toUpperCase();
     if (row.priority && !/^P[1-3]$/.test(row.priority)) {
-      issues.push(`Line ${i + 2}: priority "${row.priority}" should be P1, P2 or P3. Cleared it.`);
+      issues.push(`Entry ${i + 1}: priority "${row.priority}" should be P1, P2 or P3. Cleared it.`);
       row.priority = '';
     }
     row.status = (row.status || 'planned').toLowerCase();
@@ -335,10 +360,10 @@ export function normalizeNotes(input: Record<string, unknown>[], resolve: Resolv
   const bySpecies = new Map<string, NoteRow>();
   (tooMany(input, issues) as Record<string, unknown>[]).forEach((raw, i) => {
     if (!raw || typeof raw !== 'object') return;
-    const row = pick(raw, NOTE_COLUMNS, i + 2, issues);
+    const row = pick(raw, NOTE_COLUMNS, i + 1, issues);
     if (!row.species) return;
     const sp = resolve(row.species);
-    if (!sp) { issues.push(`Line ${i + 2}: "${row.species}" isn't a Pokémon name I recognize.`); return; }
+    if (!sp) { issues.push(`Entry ${i + 1}: "${row.species}" isn't a Pokémon name I recognize.`); return; }
     if (!row.notes) return;
     bySpecies.set(sp, { species: sp, notes: row.notes });
   });
@@ -351,7 +376,7 @@ export const COLUMNS: Record<FileKey, readonly string[]> = {
   notes: NOTE_COLUMNS,
 };
 
-/** Small, stable hash used to notice when the repo copy of a CSV changed. */
+/** Small, stable hash used to notice when the repo copy of tracker.json changed. */
 export function hashText(s: string): string {
   let h = 0x811c9dc5;
   for (let i = 0; i < s.length; i++) {

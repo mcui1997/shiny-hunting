@@ -1,6 +1,6 @@
 import { Totals } from '../components/Totals';
 import { formatWhen } from '../components/ui';
-import { parseCount } from '../lib/csv';
+import { parseCount } from '../lib/data';
 import { useDerived } from '../lib/derived';
 import { href } from '../lib/router';
 import { chronological, countsForLuck, currentSpecies, formatCount, oddsOf } from '../lib/stats';
@@ -79,7 +79,7 @@ export function StatsPage() {
       </section>
 
       <p className="small muted" style={{ margin: 0 }}>
-        Encounter data: <a href={d.game.data.source.url}>{d.game.data.source.name}</a> as of {formatWhen(d.game.data.source.date).date}. Your data: caught.csv, goals.csv, notes.csv in the repo.
+        Encounter data: <a href={d.game.data.source.url}>{d.game.data.source.name}</a> as of {formatWhen(d.game.data.source.date).date}. Your data: tracker.json in the repo.
       </p>
     </div>
   );

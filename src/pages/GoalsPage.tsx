@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Sprite } from '../components/Sprite';
 import { Pill } from '../components/ui';
-import { makeResolver } from '../lib/csv';
+import { makeResolver } from '../lib/data';
 import { useDerived } from '../lib/derived';
 import { bestSpotLabel, hordeSpots } from '../lib/game';
 import { sortGoals } from '../lib/goals';

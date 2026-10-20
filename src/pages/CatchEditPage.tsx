@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { Sprite } from '../components/Sprite';
 import { BackLink } from '../components/ui';
-import { LIMITS, makeResolver, normalizeTag, parseCount, parseDateTime } from '../lib/csv';
+import { LIMITS, makeResolver, normalizeTag, parseCount, parseDateTime } from '../lib/data';
 import { useDerived } from '../lib/derived';
 import { go, href } from '../lib/router';
 import { useStore } from '../lib/store';
