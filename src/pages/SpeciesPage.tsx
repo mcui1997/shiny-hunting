@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState } from 'react';
+import { DexEntry, HuntSummaryPanel } from '../components/DexEntry';
 import { CatchFacts } from '../components/CatchDetail';
-import { HuntTables } from '../components/HuntTables';
 import { Sprite } from '../components/Sprite';
 import { BackLink, catchStatusPill, dexNo, formatWhen, Pill, SparkleIcon } from '../components/ui';
 import { LIMITS } from '../lib/data';
@@ -8,13 +8,12 @@ import { useDerived } from '../lib/derived';
 import { href } from '../lib/router';
 import { currentSpecies, formatCount, isMineState, isOwned, isOwnedState } from '../lib/stats';
 import { useStore } from '../lib/store';
-import { GOAL_STATUSES, PRIORITIES, SEASONS, type CatchRow, type Season, type Species } from '../lib/types';
+import { GOAL_STATUSES, PRIORITIES, type CatchRow, type Species } from '../lib/types';
 
 export function SpeciesPage({ id }: { id: number }) {
   const d = useDerived()!;
   const store = useStore();
   const sp = d.game.byId.get(id);
-  const [season, setSeason] = useState<Season | null>(null);
   if (!sp) {
     return (
       <div className="stack">
@@ -27,8 +26,6 @@ export function SpeciesPage({ id }: { id: number }) {
   const mine = isMineState(entry.state);
   const latest = entry.catches[0];
   const family = d.game.family(sp.id);
-  // Hunt as this species first, then the rest of its family that appears in the wild.
-  const huntAs = [sp, ...family.filter((f) => f.id !== sp.id)].filter((f) => d.game.hasEncounters(f));
   const familyNames = new Set(family.map((f) => f.name));
   const lineCatch = store.rows.caught.find((c) => isOwned(c) && familyNames.has(currentSpecies(c)) && currentSpecies(c) !== sp.name);
 
@@ -98,38 +95,8 @@ export function SpeciesPage({ id }: { id: number }) {
         </section>
       </div>
 
-      <section aria-labelledby="hunt-h" className="panel">
-        <div className="row row--between">
-          <h2 id="hunt-h" className="h2">How to hunt {sp.name}</h2>
-          <div className="chips">
-            <span className="chips-label">Season</span>
-            {SEASONS.map((s) => (
-              <button key={s} type="button" className="chip chip--season" aria-pressed={season === s} onClick={() => setSeason(season === s ? null : s)}>{s}</button>
-            ))}
-          </div>
-        </div>
-        {huntAs.length === 0 ? (
-          <p className="muted" style={{ margin: 0 }}>
-            No wild encounters for {family.length > 1 ? 'this evolution line' : sp.name} in the game data. It likely comes from an egg, gift, fossil, raid or event. Add how you'll get it in your hunt notes.
-          </p>
-        ) : (
-          huntAs.map((f) => (
-            <div key={f.id} className="stack" style={{ gap: 10 }}>
-              {(huntAs.length > 1 || f.id !== sp.id) && (
-                <div className="row" style={{ gap: 8 }}>
-                  <Sprite id={f.id} name={f.name} shiny size={40} />
-                  <h3 className="h3">As {f.name}</h3>
-                  {f.id !== sp.id && <HowToReach game={d.game} from={f} to={sp} />}
-                </div>
-              )}
-              <HuntTables sp={f} game={d.game} season={season} />
-            </div>
-          ))
-        )}
-        <span className="small muted">
-          Source: <a href={d.game.data.source.url}>{d.game.data.source.name}</a>, {formatWhen(d.game.data.source.date).date}. Split is each species' share of that horde.
-        </span>
-      </section>
+      <DexEntry sp={sp} />
+      <HuntSummaryPanel sp={sp} family={family} game={d.game} />
 
       <HuntNotes species={sp.name} />
     </div>
@@ -156,13 +123,6 @@ function EvolutionLine({ sp, family }: { sp: Species; family: Species[] }) {
       })}
     </nav>
   );
-}
-
-function HowToReach({ game, from, to }: { game: import('../lib/game').Game; from: Species; to: Species }) {
-  const steps = game.path(from.id, to.id);
-  if (steps && steps.length) return <span className="small muted">then {steps.map((s) => `${s.how} → ${game.name(s.id)}`).join(', ')}</span>;
-  if (game.path(to.id, from.id)) return <span className="small muted">(evolves from {to.name})</span>;
-  return null;
 }
 
 function OtherCatches({ catches }: { catches: CatchRow[] }) {

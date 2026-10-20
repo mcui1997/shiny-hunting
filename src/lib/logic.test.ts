@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { makeResolver, normalizeCatches, normalizeGoals, normalizeNotes, parseTracker, toTrackerJson } from './data';
-import { Game, hordeSpots, shareIn } from './game';
+import { Game, hordeSpots, huntSummary, shareIn } from './game';
 import { goalProgress } from './goals';
 import { chanceWithin, DexIndex, poissonAtLeast, summarize } from './stats';
 import { CATCH_COLUMNS, type CatchRow, type GameData } from './types';
@@ -94,6 +94,97 @@ describe('game data matches hunts confirmed in-game', () => {
     expect(game.canBecome(280, 475)).toBe(true); // Ralts -> Gallade
     expect(game.canBecome(282, 475)).toBe(false); // Gardevoir -/-> Gallade
     expect(game.path(607, 609)?.map((s) => s.how)).toEqual(['Level 41', 'Dusk Stone']);
+  });
+});
+
+describe('hunt summary (best 5x share per season)', () => {
+  const sp = (n: string) => game.byName.get(n)!;
+  const strip = (n: string) => {
+    const h = huntSummary(sp(n));
+    return Object.fromEntries(Object.entries(h.seasons).map(([k, v]) => [k, v ? v.share : null]));
+  };
+
+  it('Aron: 50/50 with Boldore in Spring at Mistralton Cave (2F), solo in Autumn', () => {
+    expect(strip('Aron')).toEqual({ Spring: 50, Summer: 60, Autumn: 100, Winter: 50 });
+    expect(huntSummary(sp('Aron')).seasons.Autumn?.area).toBe('Mistralton Cave (2F)');
+  });
+  it('Litwick is solo every season', () => expect(strip('Litwick')).toEqual({ Spring: 100, Summer: 100, Autumn: 100, Winter: 100 }));
+  it('Dratini tops out at 20%', () => expect(Math.max(...Object.values(strip('Dratini')).map((v) => v ?? 0))).toBe(20));
+  it('Nidorino is solo only in Summer', () => expect(strip('Nidorino').Summer).toBe(100));
+  it('Weezing is solo only in Spring', () => {
+    const s = strip('Weezing');
+    expect(s.Spring).toBe(100);
+    expect([s.Summer, s.Autumn, s.Winter].every((v) => v === null || v < 100)).toBe(true);
+  });
+  it('a solo that only holds at night says so', () => {
+    expect(huntSummary(sp('Ponyta')).seasons.Autumn).toMatchObject({ share: 100, times: ['Night'], area: 'Kindle Road' });
+  });
+  it('no 5x hordes: Larvesta (single), Treecko (lure)', () => {
+    expect(Object.values(huntSummary(sp('Larvesta')).seasons).every((v) => v === null)).toBe(true);
+    expect(huntSummary(sp('Treecko')).other).toEqual(['Lure']);
+  });
+});
+
+describe('dex facts', () => {
+  const dex = (n: string) => game.byName.get(n)!.dex;
+  const hidden = (n: string) => dex(n).abilities.find((a) => a.hidden)?.name ?? null;
+
+  it('marks known hidden abilities', () => {
+    expect(hidden('Litwick')).toBe('Infiltrator');
+    expect(hidden('Abra')).toBe('Magic Guard');
+    expect(hidden('Ditto')).toBe('Imposter');
+    expect(hidden('Eevee')).toBe('Anticipation');
+    expect(hidden('Torkoal')).toBe('Shell Armor');
+    expect(hidden('Larvesta')).toBe('Swarm');
+  });
+  it('no duplicate or placeholder abilities', () => {
+    expect(dex('Magikarp').abilities.map((a) => a.name)).toEqual(['Swift Swim', 'Rattled']);
+    expect(dex('Gastly').abilities.map((a) => a.name)).toEqual(['Levitate']);
+    expect(dex('Shedinja').abilities).toEqual([{ name: 'Wonder Guard', hidden: false }]);
+    for (const p of game.list) expect(p.dex.abilities.some((a) => a.name === '--')).toBe(false);
+  });
+  it('base stats and gender', () => {
+    expect(dex('Chandelure').stats).toEqual([60, 55, 90, 145, 90, 80]);
+    expect(dex('Bulbasaur').female).toBe(12.5);
+    expect(dex('Abra').female).toBe(25);
+    expect(dex('Chansey').female).toBe(100);
+    expect(dex('Gallade').female).toBe(0);
+    expect(dex('Magnemite').female).toBeNull();
+  });
+});
+
+describe('uses tags', () => {
+  const uses = (n: string) => game.byName.get(n)!.uses;
+  const tags = (n: string) => uses(n).map((u) => u.tag);
+  const item = (n: string, tag: string, name: string) => uses(n).find((u) => u.tag === tag)?.items.find((i) => i.name === name);
+
+  it('egg hatchers, Synchronize at PokeMMO\'s 20%', () => {
+    expect(tags('Litwick')).toContain('egg');
+    expect(tags('Torkoal')).not.toContain('egg'); // White Smoke / Drought / Shell Armor
+    expect(item('Abra', 'sync', 'Synchronize')?.effect).toMatch(/20%/);
+  });
+  it('abilities with no out-of-battle effect in PokeMMO get no tag', () => {
+    for (const p of game.list) {
+      for (const u of p.uses) for (const i of u.items) expect(['Compound Eyes', 'Static']).not.toContain(i.name);
+    }
+    expect(item('Magnemite', 'more', 'Magnet Pull')).toBeUndefined();
+  });
+  it('moves learned only as an earlier stage say so', () => {
+    expect(item('Breloom', 'sleep', 'Spore')?.how).toBe('as Shroomish, Lv 40');
+    expect(item('Shroomish', 'sleep', 'Spore')?.how).toBe('Lv 40');
+  });
+  it('a use from a hidden ability is labeled', () => {
+    const swarm = item('Larvesta', 'more', 'Swarm');
+    expect(swarm).toMatchObject({ how: 'hidden ability', hidden: true });
+  });
+  it('Sweet Scent and False Swipe', () => {
+    expect(tags('Oddish')).toContain('scent');
+    expect(item('Gallade', 'swipe', 'False Swipe')?.how).toBe('Lv 23');
+    expect(tags('Smeargle')).toEqual(['sketch']);
+  });
+  it('sleep moves are listed most accurate first, Yawn last', () => {
+    const names = uses('Eevee').find((u) => u.tag === 'sleep')!.items.map((i) => i.name);
+    expect(names[names.length - 1]).toBe('Yawn');
   });
 });
 

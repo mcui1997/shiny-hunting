@@ -36,6 +36,34 @@ export interface RareRow {
   seasons: Season[];
 }
 
+export interface DexFacts {
+  abilities: { name: string; hidden: boolean }[];
+  /** Base stats: HP, Atk, Def, SpA, SpD, Spe */
+  stats: [number, number, number, number, number, number];
+  /** EVs given when defeated, same order as stats */
+  evYield: [number, number, number, number, number, number];
+  eggGroups: string[];
+  /** Percent female; null = genderless */
+  female: number | null;
+  catchRate: number;
+  /** PokeMMO PvP tier, e.g. "Over Used" */
+  tier: string;
+}
+
+export interface UseItem {
+  name: string;
+  /** "ability", "hidden ability", or how the move is learned ("Lv 23", "TM", "tutor", "egg move", "as Shroomish, Lv 40") */
+  how: string;
+  effect: string;
+  hidden?: boolean;
+}
+
+export interface UseGroup {
+  tag: string;
+  label: string;
+  items: UseItem[];
+}
+
 export interface Species {
   id: number;
   name: string;
@@ -44,6 +72,8 @@ export interface Species {
   /** Dex id of the first stage in this evolution family */
   family: number;
   evolvesTo: { id: number; how: string }[];
+  dex: DexFacts;
+  uses: UseGroup[];
   hordes: HordeRow[];
   singles: SingleRow[];
   rare: RareRow[];

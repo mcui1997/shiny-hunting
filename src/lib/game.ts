@@ -100,9 +100,6 @@ export function hordeSpots(sp: Species, season?: Season | null): Spot[] {
       b.row.seasons.length - a.row.seasons.length || a.row.area.localeCompare(b.row.area));
 }
 
-export const timesLabel = (times: string[]) =>
-  times.length === 3 ? 'All day' : times.join(' · ');
-
 export const seasonsLabel = (seasons: Season[]) =>
   seasons.length === 0 ? 'Any season' : seasons.length === 4 ? 'All seasons' : SEASONS.filter((s) => seasons.includes(s)).join(' · ');
 
@@ -115,8 +112,44 @@ export function bestSpotLabel(sp: Species): string | null {
   return `${s.row.area} · ${seasonsLabel(s.row.seasons)} · ${s.row.size}x ${verdict}${t}`;
 }
 
-export function verdictFor(share: number) {
-  if (share >= 100) return 'solo' as const;
-  if (share >= 50) return 'shared' as const;
-  return 'mixed' as const;
+// ---------- hunt summary ----------
+
+export interface SeasonBest {
+  /** Best share of a 5x horde this season (100 = solo). */
+  share: number;
+  /** Times of day that share holds, e.g. ['Night']; all three = all day. */
+  times: string[];
+  /** One place it happens. */
+  area: string;
 }
+
+export interface HuntSummary {
+  /** Best 5x horde share per season; null = no 5x horde that season. */
+  seasons: Record<Season, SeasonBest | null>;
+  /** Other ways it shows up: "3x hordes", "Fishing", "Lure"… */
+  other: string[];
+}
+
+const SINGLE_KIND: Record<string, string> = {
+  'Old Rod': 'Fishing', 'Good Rod': 'Fishing', 'Super Rod': 'Fishing',
+  Headbutt: 'Headbutt trees', Rocks: 'Rock Smash', 'Honey Tree': 'Honey trees',
+};
+const OTHER_ORDER = ['3x hordes', 'Single encounters', 'Fishing', 'Headbutt trees', 'Rock Smash', 'Honey trees', 'Lure', 'Special encounters'];
+
+export function huntSummary(sp: Species): HuntSummary {
+  const spots = hordeSpots(sp);
+  const seasons = {} as HuntSummary['seasons'];
+  for (const season of SEASONS) {
+    // hordeSpots is sorted best first, so the first 5x row in this season wins.
+    const s = spots.find((x) => x.row.size === 5 && x.row.seasons.includes(season));
+    seasons[season] = s ? { share: s.best, times: s.bestTimes, area: s.row.area } : null;
+  }
+  const other = new Set<string>();
+  if (spots.some((s) => s.row.size === 3)) other.add('3x hordes');
+  for (const r of sp.singles) other.add(SINGLE_KIND[r.type] ?? 'Single encounters');
+  for (const r of sp.rare) other.add(r.kind === 'Lure' ? 'Lure' : 'Special encounters');
+  return { seasons, other: OTHER_ORDER.filter((o) => other.has(o)) };
+}
+
+export const wikiUrl = (name: string) =>
+  `https://pokemmo.shoutwiki.com/wiki/${encodeURIComponent(name.replace(/ /g, '_'))}`;
