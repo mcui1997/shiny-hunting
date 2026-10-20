@@ -1,4 +1,4 @@
-import { parseCount, parseValue } from './csv';
+import { parseCount } from './csv';
 import { DEFAULT_ODDS, NON_HUNT_METHODS, type CatchRow } from './types';
 
 export const oddsOf = (c: CatchRow) => parseCount(c.odds) ?? DEFAULT_ODDS;
@@ -46,9 +46,6 @@ export interface Summary {
   average: number | null; // encounters per luck-eligible shiny
   fastest: CatchRow | null;
   slowest: CatchRow | null;
-  valueHeld: number;
-  valueSold: number;
-  soldIsEstimate: boolean;
 }
 
 export function summarize(rows: CatchRow[]): Summary {
@@ -57,12 +54,6 @@ export function summarize(rows: CatchRow[]): Summary {
   const expected = eligible.reduce((s, c) => s + (parseCount(c.encounters) ?? 0) / oddsOf(c), 0);
   const withEnc = eligible.filter((c) => (parseCount(c.encounters) ?? 0) > 0);
   const byEnc = [...withEnc].sort((a, b) => parseCount(a.encounters)! - parseCount(b.encounters)!);
-  let soldIsEstimate = false;
-  const valueSold = rows.filter((c) => c.status === 'sold').reduce((s, c) => {
-    const actual = parseValue(c.sold_for);
-    if (actual === null) soldIsEstimate = true;
-    return s + (actual ?? parseValue(c.est_value) ?? 0);
-  }, 0);
   return {
     total: rows.length,
     kept: rows.filter((c) => c.status === 'kept').length,
@@ -77,9 +68,6 @@ export function summarize(rows: CatchRow[]): Summary {
     average: eligible.length ? encounters / eligible.length : null,
     fastest: byEnc[0] ?? null,
     slowest: byEnc[byEnc.length - 1] ?? null,
-    valueHeld: rows.filter(isOwned).reduce((s, c) => s + (parseValue(c.est_value) ?? 0), 0),
-    valueSold,
-    soldIsEstimate,
   };
 }
 
@@ -145,14 +133,6 @@ export class DexIndex {
     const state: DexState = fam !== undefined && this.ownedFamilies.has(fam) ? 'line' : 'none';
     return { state, catches: e?.catches ?? [] };
   }
-}
-
-/** Format 2000000 as "2.0M", 3500000 as "3.5M", 350000 as "350K". */
-export function formatValue(n: number | null): string {
-  if (n === null) return '—';
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
-  return String(n);
 }
 
 export const formatCount = (n: number | null | undefined) => (n === null || n === undefined ? '—' : n.toLocaleString('en-US'));

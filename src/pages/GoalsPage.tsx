@@ -57,7 +57,7 @@ export function GoalsPage() {
         if (!items.length) return null;
         return (
           <section key={p || 'none'} className="stack" style={{ gap: 10 }} aria-label={label}>
-            <h2 className="h2 group-title">{label} <span className="small muted" style={{ fontFamily: 'var(--body)', fontWeight: 600 }}>{items.length}</span></h2>
+            <h2 className="h2">{label}</h2>
             <GoalTable goals={items} />
           </section>
         );

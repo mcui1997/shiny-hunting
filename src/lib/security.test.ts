@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   cleanText, escapeCell, ImportError, LIMITS, makeResolver, normalizeCatches, normalizeGoals, normalizeNotes,
-  parseCount, parseCsv, parseDateTime, parseValue, toCsv, unescapeCell,
+  parseCount, parseCsv, parseDateTime, toCsv, unescapeCell,
 } from './csv';
 import { parseHash } from './router';
 import { CATCH_COLUMNS } from './types';
@@ -100,8 +100,6 @@ describe('numbers and dates', () => {
     expect(parseCount('99999999999')).toBeNull();
     expect(parseCount('1000000001')).toBeNull();
     expect(parseCount('1e9')).toBeNull();
-    expect(parseValue('9999999999999999M')).toBeNull();
-    expect(parseValue('1'.repeat(30))).toBeNull();
   });
 
   it('rejects odds below 2 so luck can never divide by zero', () => {

@@ -1,19 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   detectFile, makeResolver, normalizeCatches, normalizeGoals, normalizeTag, parseCount, parseCsv, parseDateTime,
-  parseValue, toCsv,
+  toCsv,
 } from './csv';
 import { CATCH_COLUMNS } from './types';
 
 const resolve = makeResolver(['Nidoran♀', 'Nidoran♂', 'Mr. Mime', "Farfetch'd", 'Litwick', 'Chandelure', 'Heatmor', 'Aron', 'Flabébé']);
-
-describe('parseValue', () => {
-  it.each([
-    ['2M', 2_000_000], ['2.5m', 2_500_000], ['350k', 350_000], ['2,000,000', 2_000_000],
-    ['3500000', 3_500_000], [' 4M ', 4_000_000], ['$1.2M', 1_200_000],
-  ])('%s -> %d', (s, n) => expect(parseValue(s)).toBe(n));
-  it.each(['', 'abc', '2MM', '-5'])('rejects %j', (s) => expect(parseValue(s)).toBeNull());
-});
 
 describe('parseCount', () => {
   it('handles commas', () => expect(parseCount('26,321')).toBe(26321));
@@ -72,7 +64,8 @@ describe('CSV round trip', () => {
     const { rows, issues } = normalizeCatches(parsed.rows, resolve);
     expect(issues).toEqual([]);
     expect(rows).toHaveLength(2);
-    expect(rows[0]).toMatchObject({ id: 's001', species: 'Aron', encounters: '26321', caught_at: '2026-09-23 21:04', est_value: '2000000', status: 'kept' });
+    expect(rows[0]).toMatchObject({ id: 's001', species: 'Aron', encounters: '26321', caught_at: '2026-09-23 21:04', status: 'kept' });
+    expect('est_value' in rows[0]).toBe(false); // old Value column is ignored
     expect('thoughts' in rows[0]).toBe(false); // old Thoughts column is ignored
     expect(rows[1]).toMatchObject({ id: 's002', species: 'Heatmor', status: 'sold' });
   });
@@ -81,12 +74,12 @@ describe('CSV round trip', () => {
 describe('normalizeCatches', () => {
   it('flags unknown names and bad numbers instead of dropping rows', () => {
     const { rows, issues } = normalizeCatches([
-      { species: 'Litwik', encounters: 'lots', est_value: 'cheap', caught_at: '2026-10-14 04:37', status: 'kept' },
+      { species: 'Litwik', encounters: 'lots', odds: 'cheap', caught_at: '2026-10-14 04:37', status: 'kept' },
     ], resolve);
     expect(rows).toHaveLength(1);
     expect(issues.join(' ')).toMatch(/Litwik/);
     expect(issues.join(' ')).toMatch(/encounters/);
-    expect(issues.join(' ')).toMatch(/est value/);
+    expect(issues.join(' ')).toMatch(/odds/);
   });
 
   it('keeps unique ids, replaces duplicates, and clears a current form equal to species', () => {
