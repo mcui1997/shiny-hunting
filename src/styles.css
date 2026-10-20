@@ -284,3 +284,51 @@ select, .select { color: var(--ink); background-color: var(--paper); }
 select option, select optgroup { color: var(--ink); background-color: var(--paper); }
 select option:checked { color: var(--ink); background-color: var(--lagoon-soft); }
 select:hover, .select:hover { color: var(--ink); border-color: var(--moss); }
+
+/* ---------- dex entry ---------- */
+.label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--moss); }
+.dex-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 32px; }
+.ability { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--tile); font-weight: 600; font-size: 14px; }
+.ability--hidden { background: var(--paper); border: 1px dashed var(--line-strong); }
+.ability-tag { font-size: 11px; font-weight: 700; color: var(--moss); text-transform: uppercase; letter-spacing: .05em; }
+.facts { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px 20px; }
+.facts dt { font-size: 12px; color: var(--moss); margin-bottom: 2px; }
+.facts dd { margin: 0; font-weight: 600; font-size: 14px; }
+.stats { display: flex; flex-direction: column; gap: 7px; }
+.stat { display: grid; grid-template-columns: 64px 36px 1fr; align-items: center; gap: 10px; font-size: 14px; }
+.stat-name { color: var(--moss); font-size: 13px; }
+.stat-val { text-align: right; font-weight: 600; }
+.stat-bar { height: 8px; border-radius: 999px; background: var(--tile); overflow: hidden; }
+.stat-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--lagoon); }
+.stat--total { border-top: 1px solid var(--line); padding-top: 7px; margin-top: 2px; }
+.stat--total .stat-name, .stat--total .stat-val { color: var(--ink); font-weight: 700; }
+.uses { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.uses li { display: grid; grid-template-columns: 170px 1fr; gap: 12px; padding: 9px 0; border-top: 1px solid #EDF1EE; font-size: 14px; }
+.uses li:first-child { border-top: 0; padding-top: 2px; }
+.use-label { font-weight: 700; }
+.use-items { display: flex; flex-direction: column; gap: 3px; }
+
+/* ---------- hunt summary ---------- */
+.hunt-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.hunt-list { gap: 0; }
+.hunt-list li { display: grid; grid-template-columns: 150px 1fr; align-items: start; gap: 12px; padding: 10px 0; }
+.hunt-list li:only-child { grid-template-columns: 1fr; padding: 0; }
+.hunt-list li + li { border-top: 1px solid #EDF1EE; }
+.hunt-as { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; font-weight: 700; color: var(--ink); text-decoration: none; }
+.hunt-facts { display: flex; flex-direction: column; gap: 6px; min-height: 28px; justify-content: center; }
+.seasons { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; max-width: 460px; }
+.season { display: flex; flex-direction: column; gap: 1px; padding: 7px 10px; border-radius: 12px; background: var(--tile); border: 1px solid transparent; }
+.season-name { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--moss); }
+.season-val { font: 700 15px/1.2 var(--mono); color: var(--ink); }
+.season-when { font-size: 11px; color: var(--moss); }
+.season--solo { background: var(--lagoon-soft); }
+.season--solo .season-val { color: var(--lagoon-deep); }
+.season--top { border-color: var(--lagoon); }
+.season--none .season-val { color: var(--line-strong); }
+.hunt-fact { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; }
+
+@media (max-width: 720px) {
+  .dex-grid { grid-template-columns: minmax(0, 1fr); }
+  .uses li { grid-template-columns: 1fr; gap: 2px; }
+  .hunt-list li { grid-template-columns: 1fr; gap: 6px; }
+}

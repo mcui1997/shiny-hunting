@@ -1,19 +1,20 @@
-// Builds public/data/pokemon.json from PokeMMO Hub's monster.json.
+// Builds public/data/pokemon.json from PokeMMO Hub's monster.json and moves.json.
 //
 // Usage:
 //   node scripts/build-gamedata.mjs                 # downloads the pinned source
-//   node scripts/build-gamedata.mjs path/to/monster.json
+//   node scripts/build-gamedata.mjs path/to/pokemmo # a local copy of src/data/pokemmo
 //
-// Source: https://github.com/PokeMMO-Tools/pokemmo-hub (src/data/pokemmo/monster.json)
+// Source: https://github.com/PokeMMO-Tools/pokemmo-hub (src/data/pokemmo/)
 // To pick up a newer PokeMMO patch, bump SOURCE_COMMIT and SOURCE_DATE, then rerun.
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { RULES, usesFor } from './uses.mjs';
 
 const SOURCE_COMMIT = 'd462e849a7319b52ba6b5f15e368c24e23529dc8';
 const SOURCE_DATE = '2026-07-30';
-const SOURCE_URL = `https://raw.githubusercontent.com/PokeMMO-Tools/pokemmo-hub/${SOURCE_COMMIT}/src/data/pokemmo/monster.json`;
+const SOURCE_BASE = `https://raw.githubusercontent.com/PokeMMO-Tools/pokemmo-hub/${SOURCE_COMMIT}/src/data/pokemmo`;
 const MAX_DEX = 649; // Gen 1–5. Higher IDs are alternate-form records and event costumes.
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -21,12 +22,18 @@ const outFile = resolve(here, '../public/data/pokemon.json');
 
 const SEASONS = ['Spring', 'Summer', 'Autumn', 'Winter'];
 
-async function loadSource() {
+async function loadFile(name) {
   const local = process.argv[2];
-  if (local) return JSON.parse(await readFile(local, 'utf8'));
-  const res = await fetch(SOURCE_URL);
-  if (!res.ok) throw new Error(`Download failed: ${res.status} ${SOURCE_URL}`);
+  if (local) return JSON.parse(await readFile(resolve(local, name), 'utf8'));
+  const url = `${SOURCE_BASE}/${name}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Download failed: ${res.status} ${url}`);
   return res.json();
+}
+
+async function loadSource() {
+  const [monsters, moves] = await Promise.all([loadFile('monster.json'), loadFile('moves.json')]);
+  return { monsters, moves };
 }
 
 const titleCase = (s) => s.charAt(0) + s.slice(1).toLowerCase();
@@ -70,7 +77,36 @@ function evoLabel(e) {
   }
 }
 
-function main(source) {
+const STAT_KEYS = ['hp', 'attack', 'defense', 'sp_attack', 'sp_defense', 'speed'];
+const EV_KEYS = ['ev_hp', 'ev_attack', 'ev_defense', 'ev_sp_attack', 'ev_sp_defense', 'ev_speed'];
+const titleWords = (s) => s.replace(/\b[a-z]/g, (c) => c.toUpperCase());
+
+// Ability slots are [first, second, hidden]: the second repeats the first when there's only one,
+// and the hidden slot is "--" when there's none (checked against known hidden abilities in tests).
+function abilitiesOf(m) {
+  const [a, b, h] = m.abilities.map((x) => x.name);
+  const out = [{ name: a, hidden: false }];
+  if (b && b !== a && b !== '--') out.push({ name: b, hidden: false });
+  if (h && h !== '--' && h !== a && h !== b) out.push({ name: h, hidden: true });
+  return out;
+}
+
+function dexFacts(m) {
+  // gender_ratio is out of 254: 255 = genderless, 254 = always female, 0 = always male.
+  const g = m.gender_ratio;
+  const female = g === 255 ? null : g === 254 ? 100 : g === 0 ? 0 : Math.round(((g + 1) / 256) * 1000) / 10;
+  return {
+    abilities: abilitiesOf(m),
+    stats: STAT_KEYS.map((k) => m.stats[k]),
+    evYield: EV_KEYS.map((k) => m.yields[k] ?? 0),
+    eggGroups: m.egg_groups.map(titleWords),
+    female,
+    catchRate: m.catch_rate,
+    tier: m.tiers?.[0] ?? '',
+  };
+}
+
+function main({ monsters: source, moves: moveList }) {
   const mons = source.filter((m) => m.id >= 1 && m.id <= MAX_DEX);
   if (mons.length !== MAX_DEX) throw new Error(`Expected ${MAX_DEX} species, got ${mons.length}`);
   const nameById = new Map(mons.map((m) => [m.id, m.name]));
@@ -163,11 +199,26 @@ function main(source) {
       obtainable: Boolean(m.obtainable),
       family: rootOf(m.id),
       evolvesTo,
+      dex: dexFacts(m),
       hordes: h,
       singles: s,
       rare: rr,
     };
   });
+
+  // Every rule must name a real ability/move, so a typo or a rename in the source fails loudly.
+  const abilityNames = new Set(mons.flatMap((m) => m.abilities.map((a) => a.name)));
+  const moveNames = new Set(moveList.map((mv) => mv.name));
+  for (const a of [...Object.keys(RULES.ABILITY_USES), ...Object.keys(RULES.TRAP_ABILITIES)]) {
+    if (!abilityNames.has(a)) throw new Error(`uses.mjs: no species has the ability "${a}"`);
+  }
+  for (const mv of Object.keys(RULES.MOVE_USES)) if (!moveNames.has(mv)) throw new Error(`uses.mjs: no move named "${mv}"`);
+
+  // Uses need the finished family tree (moves learned only as an earlier stage).
+  const byId = new Map(out.map((p) => [p.id, p]));
+  const parentOf = (id) => parent.get(id);
+  const accuracy = new Map(moveList.map((mv) => [mv.name, mv.base_accuracy]));
+  for (const m of mons) byId.get(m.id).uses = usesFor(m, { monsById: new Map(mons.map((x) => [x.id, x])), parentOf, accuracy });
 
   return {
     source: { name: 'PokeMMO Hub game data', url: 'https://github.com/PokeMMO-Tools/pokemmo-hub', commit: SOURCE_COMMIT, date: SOURCE_DATE },

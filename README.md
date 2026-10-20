@@ -12,7 +12,9 @@
 ## What it does
 
 - **Dex** of all 649 Gen 1–5 Pokémon in shiny and normal, searchable, with season and solo-horde filters
-- **Hunt plans** for every species: horde splits by season and time of day, including earlier evolutions
+- **Dex entries** for every species: abilities (hidden marked), base stats, EV yield, egg groups, gender, catch rate, tier
+- **Uses** worked out from abilities and learnable moves: egg hatcher, Synchronize (20% in PokeMMO), Sweet Scent, False Swipe, sleep and paralysis moves, trapping, encounter-rate abilities
+- **Hunt summary**: best 5x horde share in each season, for the species and its earlier stages, with a link to the PokeMMO wiki
 - **Your log** of catches with evolutions, categories, and luck against 1 in 27,000 (donator status)
 - **Edit on the site**, then export `tracker.json` and commit. No backend.
 - **Safe to import any file:** every entry is validated and size-capped, and the page runs under a strict Content Security Policy
