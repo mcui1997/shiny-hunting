@@ -54,7 +54,7 @@ export interface GameData {
   pokemon: Species[];
 }
 
-// ---------- Your data (CSV files) ----------
+// ---------- Your data (tracker.json) ----------
 
 export type CatchStatus = 'kept' | 'sold' | 'traded' | 'fled';
 export const CATCH_STATUSES: CatchStatus[] = ['kept', 'sold', 'traded', 'fled'];
@@ -83,7 +83,7 @@ export const CATCH_COLUMNS = [
 /** Suggested categories for grouping owned shinies. Any short tag works. */
 export const DEFAULT_TAGS = ['utility', 'cosmetic'];
 export type CatchColumn = (typeof CATCH_COLUMNS)[number];
-/** One row of caught.csv. Every value is a string as stored; helpers parse numbers and dates. */
+/** One catch. Every value is held as a string (blank = not set); helpers parse numbers and dates. */
 export type CatchRow = Record<CatchColumn, string>;
 
 export const GOAL_COLUMNS = ['species', 'priority', 'status', 'notes'] as const;

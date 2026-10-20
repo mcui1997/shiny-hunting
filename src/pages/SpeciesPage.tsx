@@ -3,7 +3,7 @@ import { CatchFacts } from '../components/CatchDetail';
 import { HuntTables } from '../components/HuntTables';
 import { Sprite } from '../components/Sprite';
 import { BackLink, catchStatusPill, dexNo, formatWhen, Pill, SparkleIcon } from '../components/ui';
-import { LIMITS } from '../lib/csv';
+import { LIMITS } from '../lib/data';
 import { useDerived } from '../lib/derived';
 import { href } from '../lib/router';
 import { currentSpecies, formatCount, isMineState, isOwned, isOwnedState } from '../lib/stats';

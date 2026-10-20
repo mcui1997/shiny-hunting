@@ -1,4 +1,4 @@
-import { parseCount } from '../lib/csv';
+import { parseCount } from '../lib/data';
 import { href } from '../lib/router';
 import { countsForLuck, formatCount, oddsOf } from '../lib/stats';
 import { DEFAULT_ODDS, type CatchRow } from '../lib/types';
