@@ -76,8 +76,8 @@ export const NON_HUNT_METHODS = ['traded', 'bought'];
 
 export const CATCH_COLUMNS = [
   'id', 'species', 'form', 'current_form', 'evolved_on', 'caught_at', 'encounters', 'method',
-  'location', 'season', 'nature', 'ivs', 'ball', 'odds', 'est_value', 'status', 'sold_for',
-  'sold_on', 'tag',
+  'location', 'season', 'nature', 'ivs', 'ball', 'odds', 'status', 'sold_on',
+  'tag',
 ] as const;
 
 /** Suggested categories for grouping owned shinies. Any short tag works. */

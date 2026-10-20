@@ -110,14 +110,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---------- stat tiles ---------- */
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
 .tile { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 4px; }
-.tile--ink { background: var(--ink); border-color: var(--ink); color: #fff; }
-.tile--ink .eyebrow, .tile--ink .tile-sub { color: var(--on-ink-muted); }
 .tile-big { font: 800 40px/1 var(--display); letter-spacing: -0.01em; }
 .tile-big--mono { font: 700 34px/1.1 var(--mono); }
-.tile--ink .tile-big { color: var(--sparkle); }
 .tile-sub { font-size: 13px; color: var(--moss); }
 @media (max-width: 560px) {
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .tiles > .tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .tile { padding: 14px; }
   .tile-big { font-size: 30px; }
   .tile-big--mono { font-size: 22px; }
@@ -212,7 +210,7 @@ details > summary { cursor: pointer; font-weight: 700; min-height: 40px; display
 .owned-list { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
 .owned-head, .owned-row {
   display: grid;
-  grid-template-columns: 64px minmax(170px, 1.5fr) minmax(110px, 0.9fr) 104px minmax(150px, 1.4fr) 72px 56px;
+  grid-template-columns: 64px minmax(170px, 1.5fr) minmax(110px, 0.9fr) 104px minmax(150px, 1.6fr) 56px;
   gap: 16px 20px; align-items: center; padding: 12px 20px;
 }
 .owned-head { padding-top: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: 12px; font-weight: 600; color: var(--moss); text-transform: uppercase; letter-spacing: .06em; }
@@ -229,7 +227,6 @@ details > summary { cursor: pointer; font-weight: 700; min-height: 40px; display
 .owned-where { color: var(--neutral-ink); overflow-wrap: anywhere; }
 .owned-enc { font-weight: 700; font-size: 15px; }
 .owned-label { display: none; }
-.owned-value { font-weight: 700; }
 .owned-edit, .goal-remove { justify-self: end; }
 .num { text-align: right; align-items: flex-end; }
 .owned-encs, .owned-head .num:nth-child(4) { padding-right: 12px; }
@@ -237,7 +234,7 @@ details > summary { cursor: pointer; font-weight: 700; min-height: 40px; display
   .owned-head { display: none; }
   .owned-row {
     grid-template-columns: 56px minmax(0, 1fr) auto;
-    grid-template-areas: "tile name edit" "tile date date" "tile enc value" "tile where where";
+    grid-template-areas: "tile name edit" "tile date date" "tile enc enc" "tile where where";
     gap: 4px 12px; padding: 14px 16px; align-items: start;
   }
   .owned-tile { grid-area: tile; width: 56px; height: 56px; }
@@ -247,7 +244,6 @@ details > summary { cursor: pointer; font-weight: 700; min-height: 40px; display
   .owned-date .small { font-size: 13px; }
   .owned-encs { grid-area: enc; flex-direction: row; gap: 4px; align-items: baseline; text-align: left; }
   .owned-label { display: inline; }
-  .owned-value { grid-area: value; }
   .owned-where { grid-area: where; font-size: 13px; }
 }
 
@@ -281,3 +277,10 @@ details > summary { cursor: pointer; font-weight: 700; min-height: 40px; display
 }
 .pill--tag { background: var(--lagoon-soft); color: var(--lagoon-deep); text-transform: capitalize; }
 .chip-count { font-family: var(--mono); font-size: 12px; opacity: .7; margin-left: 4px; }
+
+/* Native dropdowns: keep option text dark on a light list in every browser and OS theme,
+   so a hovered or selected option never ends up as white text on a light background. */
+select, .select { color: var(--ink); background-color: var(--paper); }
+select option, select optgroup { color: var(--ink); background-color: var(--paper); }
+select option:checked { color: var(--ink); background-color: var(--lagoon-soft); }
+select:hover, .select:hover { color: var(--ink); border-color: var(--moss); }

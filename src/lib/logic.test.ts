@@ -26,8 +26,6 @@ describe('repo data', () => {
     expect(s.total).toBe(9);
     expect(s.encounters).toBe(164_632);
     expect(s.luck!.toFixed(2)).toBe('1.48');
-    expect(s.valueHeld).toBe(20_000_000);
-    expect(s.valueSold).toBe(3_500_000);
     expect(s.fastest?.species).toBe('Nidorino');
     expect(s.slowest?.species).toBe('Heatmor');
   });
@@ -114,15 +112,6 @@ describe('luck math', () => {
     expect(s.expected).toBeCloseTo(2, 10);
   });
 
-  it('sold value prefers the sale price and flags estimates', () => {
-    const s = summarize([
-      make({ status: 'sold', est_value: '3000000', sold_for: '3500000' }),
-      make({ status: 'sold', est_value: '1000000' }),
-    ]);
-    expect(s.valueSold).toBe(4_500_000);
-    expect(s.soldIsEstimate).toBe(true);
-    expect(s.valueHeld).toBe(0);
-  });
 });
 
 describe('evolutions and goals', () => {

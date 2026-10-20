@@ -9,14 +9,11 @@ import { href } from '../lib/router';
 import { currentSpecies, formatCount, isMineState, isOwnedState } from '../lib/stats';
 import { SEASONS, type Season, type Species } from '../lib/types';
 
-type Filter = 'all' | 'mine' | 'goals' | 'missing';
-const FILTERS: [Filter, string][] = [['all', 'All'], ['mine', 'Owned'], ['goals', 'Goals'], ['missing', 'Missing']];
 const PAGE = 120;
 
 export function DexPage() {
   const d = useDerived()!;
   const [mode, setMode] = usePref<'shiny' | 'normal'>('sprites', 'shiny');
-  const [filter, setFilter] = usePref<Filter>('dex-filter', 'all');
   const [query, setQuery] = useState('');
   const [season, setSeason] = useState<Season | null>(null);
   const [soloOnly, setSoloOnly] = useState(false);
@@ -26,11 +23,6 @@ export function DexPage() {
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
     return d.game.list.filter((sp) => {
-      const entry = d.dex.get(sp.name);
-      const mine = isOwnedState(entry.state);
-      if (filter === 'mine' && !mine) return false;
-      if (filter === 'goals' && !d.goals.has(sp.name)) return false;
-      if (filter === 'missing' && (mine || !sp.obtainable)) return false;
       if (season || soloOnly) {
         const spots = hordeSpots(sp, season);
         if (!spots.length) return false;
@@ -43,9 +35,9 @@ export function DexPage() {
       }
       return true;
     });
-  }, [d, filter, query, season, soloOnly]);
+  }, [d, query, season, soloOnly]);
 
-  useEffect(() => setLimit(PAGE), [filter, query, season, soloOnly]);
+  useEffect(() => setLimit(PAGE), [query, season, soloOnly]);
 
   const sentinel = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -65,11 +57,6 @@ export function DexPage() {
           <div className="field search">
             <label htmlFor="dex-search">Search</label>
             <input id="dex-search" className="input" type="search" placeholder="Pokémon, dex number, or area" value={query} onChange={(e) => setQuery(e.target.value)} />
-          </div>
-          <div className="chips" role="group" aria-label="Show">
-            {FILTERS.map(([key, label]) => (
-              <button key={key} type="button" className="chip" aria-pressed={filter === key} onClick={() => setFilter(key)}>{label}</button>
-            ))}
           </div>
           <div className="segmented" role="group" aria-label="Sprite style">
             <button type="button" aria-pressed={shiny} onClick={() => setMode('shiny')}><SparkleIcon size={14} color="currentColor" />Shiny</button>

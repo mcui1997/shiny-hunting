@@ -1,6 +1,6 @@
-import { parseCount, parseValue } from '../lib/csv';
+import { parseCount } from '../lib/csv';
 import { href } from '../lib/router';
-import { countsForLuck, formatCount, formatValue, oddsOf } from '../lib/stats';
+import { countsForLuck, formatCount, oddsOf } from '../lib/stats';
 import { DEFAULT_ODDS, type CatchRow } from '../lib/types';
 import { formatWhen, STATUS_LABEL } from './ui';
 
@@ -37,8 +37,6 @@ export function CatchFacts({ c }: { c: CatchRow }) {
   const when = formatWhen(c.caught_at);
   const enc = parseCount(c.encounters);
   const odds = oddsOf(c);
-  const est = parseValue(c.est_value);
-  const sold = parseValue(c.sold_for);
   const pace = enc && countsForLuck(c) ? odds / enc : null;
   const paceLabel = pace === null ? null
     : pace >= 0.9 && pace <= 1.1 ? 'About average'
@@ -49,7 +47,7 @@ export function CatchFacts({ c }: { c: CatchRow }) {
     <div className="facts">
       <Fact label="Caught" value={when.date} sub={when.time} />
       {enc !== null ? <Fact label="Encounters" value={formatCount(enc)} sub={paceLabel} mono /> : <EmptyFact label="Encounters" id={c.id} />}
-      <Fact label="Est. value" value={formatValue(est)} sub={c.status === 'sold' && sold !== null ? `Sold for ${formatValue(sold)}` : STATUS_LABEL[c.status]} />
+      {c.status !== 'kept' && <Fact label="Status" value={STATUS_LABEL[c.status]} sub={c.sold_on ? formatWhen(c.sold_on).date : null} />}
       {c.method ? <Fact label="Method" value={c.method.replace(/^./, (m) => m.toUpperCase())} /> : <EmptyFact label="Method" id={c.id} />}
       {c.location ? <Fact label="Location" value={c.location} sub={c.season || null} /> : <EmptyFact label="Location" id={c.id} />}
       {c.nature && <Fact label="Nature" value={c.nature} sub={NATURE_EFFECT[c.nature] ?? null} />}
@@ -58,7 +56,6 @@ export function CatchFacts({ c }: { c: CatchRow }) {
       {c.form && <Fact label="Form" value={c.form} />}
       {c.current_form && <Fact label="Evolved" value={`Into ${c.current_form}`} sub={c.evolved_on ? formatWhen(c.evolved_on).date : null} />}
       {odds !== DEFAULT_ODDS && <Fact label="Odds" value={`1 in ${formatCount(odds)}`} />}
-      {c.sold_on && <Fact label="Sold on" value={formatWhen(c.sold_on).date} />}
     </div>
   );
 }

@@ -16,7 +16,6 @@ export const LIMITS = {
   /** Longest short field (location, ball, IVs, names…). */
   shortText: 120,
   maxCount: 1_000_000_000,
-  maxValue: 1_000_000_000_000,
   minOdds: 2,
 };
 
@@ -55,12 +54,12 @@ export interface Parsed {
   rows: Record<string, string>[];
 }
 
-/** Header cells are matched loosely: "Est. Value" and "est_value" are the same column. */
+/** Header cells are matched loosely: "Caught At" and "caught_at" are the same column. */
 export const headerKey = (h: string) =>
   cleanText(h, 60).text.toLowerCase().replace(/[.?]/g, '').replace(/[\s-]+/g, '_');
 
 const HEADER_ALIASES: Record<string, string> = {
-  pokemon: 'species', 'pokémon': 'species', value: 'est_value', estimated_value: 'est_value',
+  pokemon: 'species', 'pokémon': 'species',
   capture_date: 'caught_at', date: 'caught_at', caught: 'caught_at', sold: 'status',
 };
 
@@ -109,17 +108,6 @@ export function toCsv(rows: Record<string, string>[], columns: readonly string[]
 }
 
 // ---------- value parsing ----------
-
-/** "2M", "2.5m", "500k", "2,000,000", "2000000" -> number. Blank, junk, or absurd -> null. */
-export function parseValue(raw: string | undefined): number | null {
-  const s = (raw ?? '').trim().toLowerCase().replace(/[,\s$]/g, '');
-  if (!s || s.length > 20) return null;
-  const m = /^(\d+(?:\.\d+)?)([km]?)$/.exec(s);
-  if (!m) return null;
-  const mult = m[2] === 'm' ? 1_000_000 : m[2] === 'k' ? 1_000 : 1;
-  const n = Math.round(Number.parseFloat(m[1]) * mult);
-  return Number.isSafeInteger(n) && n <= LIMITS.maxValue ? n : null;
-}
 
 /** Whole numbers only: "26,321" -> 26321. Blank, junk, or over a billion -> null. */
 export function parseCount(raw: string | undefined): number | null {
@@ -253,12 +241,6 @@ export function normalizeCatches(input: Record<string, unknown>[], resolve: Reso
       const n = parseCount(row.odds);
       if (n === null || n < LIMITS.minOdds) { issues.push(`Line ${line}: odds "${row.odds}" should be a number like 27000. Using the default.`); row.odds = ''; }
       else row.odds = String(n);
-    }
-    for (const c of ['est_value', 'sold_for'] as const) {
-      if (!row[c]) continue;
-      const n = parseValue(row[c]);
-      if (n === null) { issues.push(`Line ${line}: ${c.replace('_', ' ')} "${row[c]}" isn't a number like 2M or 2000000. Cleared it.`); row[c] = ''; }
-      else row[c] = String(n);
     }
 
     // Old sheet used "Sold? Yes/No"; map that onto status.

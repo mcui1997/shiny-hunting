@@ -6,14 +6,14 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshot.png" alt="The dex view: luck, encounter and value totals above a grid of owned shiny Pokémon" width="880">
+  <img src="docs/screenshot.png" alt="The dex view: shiny, encounter and luck totals above the full Pokédex grid" width="880">
 </p>
 
 ## What it does
 
-- **Dex** of all 649 Gen 1–5 Pokémon in shiny and normal, filtered by owned, goals, season and solo hordes
+- **Dex** of all 649 Gen 1–5 Pokémon in shiny and normal, searchable, with season and solo-horde filters
 - **Hunt plans** for every species: horde splits by season and time of day, including earlier evolutions
-- **Your log** of catches with evolutions, value, and luck against 1 in 27,000 (donator status)
+- **Your log** of catches with evolutions, categories, and luck against 1 in 27,000 (donator status)
 - **Edit on the site**, then export CSV and commit. No backend.
 - **Safe to import anyone's CSV:** rows are validated, exports are spreadsheet-safe, and the page runs under a strict Content Security Policy
 
@@ -37,7 +37,6 @@
 | `encounters` | Since your previous shiny |
 | `method` | `5x horde`, `3x horde`, `single`, `fishing`, `safari`, `egg`, `traded`, `bought`, `other` |
 | `odds` | Blank = 1 in 27,000 (donator status) |
-| `est_value` / `sold_for` | `2000000` or `2M` |
 | `status` | `kept`, `sold`, `traded`, `fled` |
 | `tag` | Category for the Owned filter, e.g. `utility`, `cosmetic`, or your own |
 

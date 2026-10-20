@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { Sprite } from '../components/Sprite';
 import { BackLink } from '../components/ui';
-import { LIMITS, makeResolver, normalizeTag, parseCount, parseDateTime, parseValue } from '../lib/csv';
+import { LIMITS, makeResolver, normalizeTag, parseCount, parseDateTime } from '../lib/csv';
 import { useDerived } from '../lib/derived';
 import { go, href } from '../lib/router';
 import { useStore } from '../lib/store';
@@ -14,23 +14,14 @@ const nowLocal = () => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 };
 
-/** "2000000" -> "2M", "350000" -> "350K"; anything else unchanged. */
-function compactValue(s: string) {
-  const n = parseValue(s);
-  if (n === null) return s;
-  if (n >= 1_000_000 && n % 100_000 === 0) return `${n / 1_000_000}M`;
-  if (n >= 1_000 && n % 1_000 === 0) return `${n / 1_000}K`;
-  return String(n);
-}
+const NEW_TAG = '__new__';
 
 export function CatchEditPage({ id, species }: { id?: string; species?: string }) {
   const d = useDerived()!;
   const store = useStore();
   const existing = id ? store.rows.caught.find((c) => c.id === id) : undefined;
   const resolve = useMemo(() => makeResolver(d.game.names), [d.game]);
-  const [row, setRow] = useState<CatchRow>(() => existing ? {
-    ...existing, est_value: compactValue(existing.est_value), sold_for: compactValue(existing.sold_for),
-  } : {
+  const [row, setRow] = useState<CatchRow>(() => existing ? { ...existing } : {
     ...blank(), id: store.newCatchId(), species: species ? resolve(species) ?? species : '',
     caught_at: nowLocal(), status: 'kept',
   });
@@ -46,7 +37,8 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
   }
 
   const sp = d.game.byName.get(resolve(row.species) ?? '');
-  const tagOptions = [...new Set([...DEFAULT_TAGS, ...store.rows.caught.map((c) => c.tag).filter(Boolean)])].sort();
+  const tagOptions = [...new Set([...DEFAULT_TAGS, ...store.rows.caught.map((c) => c.tag), row.tag].filter(Boolean))].sort();
+  const [customTag, setCustomTag] = useState(false);
   const evolveOptions = sp ? d.game.descendants(sp.id) : [];
   const areas = sp ? [...new Set(d.game.family(sp.id).flatMap((f) => [...f.hordes, ...f.singles].map((r) => r.area)))].sort() : [];
   const set = (k: keyof CatchRow) => (e: { target: { value: string } }) => {
@@ -66,10 +58,6 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
     for (const k of ['encounters', 'odds'] as const) {
       if (row[k] && parseCount(row[k]) === null) er[k] = 'Whole number, like 21201.';
       else if (row[k]) out[k] = String(parseCount(row[k]));
-    }
-    for (const k of ['est_value', 'sold_for'] as const) {
-      if (row[k] && parseValue(row[k]) === null) er[k] = 'A number like 2M, 350K or 2000000.';
-      else if (row[k]) out[k] = String(parseValue(row[k]));
     }
     for (const k of ['evolved_on', 'sold_on'] as const) {
       if (row[k] && !parseDateTime(row[k])) er[k] = 'Use a date like 2026-10-20.';
@@ -148,11 +136,6 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
 
         <div className="form-grid">
           <div className="field">
-            <label htmlFor="f-value">Estimated value</label>
-            <input id="f-value" maxLength={LIMITS.shortText} className="input" placeholder="2M" value={row.est_value} onChange={set('est_value')} {...inv('est_value')} />
-            {err('est_value')}
-          </div>
-          <div className="field">
             <label htmlFor="f-status">Status</label>
             <select id="f-status" className="select" value={row.status} onChange={set('status')}>
               {CATCH_STATUSES.map((s) => <option key={s} value={s}>{s[0].toUpperCase() + s.slice(1)}</option>)}
@@ -160,17 +143,26 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
           </div>
           <div className="field">
             <label htmlFor="f-tag">Category</label>
-            <input id="f-tag" maxLength={24} className="input" list="tag-names" placeholder="utility, cosmetic…" value={row.tag} onChange={set('tag')} />
-            <datalist id="tag-names">{tagOptions.map((t) => <option key={t} value={t} />)}</datalist>
-            <span className="field-hint">Groups your Owned list. Pick one or type your own.</span>
+            {customTag ? (
+              <div className="row" style={{ gap: 8, flexWrap: 'nowrap' }}>
+                <input id="f-tag" maxLength={24} className="input" placeholder="e.g. competitive" value={row.tag} onChange={set('tag')} autoFocus />
+                <button type="button" className="btn btn--small" onClick={() => { setCustomTag(false); setRow((r) => ({ ...r, tag: '' })); }}>Cancel</button>
+              </div>
+            ) : (
+              <select id="f-tag" className="select" value={row.tag}
+                onChange={(e) => {
+                  if (e.target.value === NEW_TAG) { setCustomTag(true); setRow((r) => ({ ...r, tag: '' })); }
+                  else set('tag')(e);
+                }}>
+                <option value="">No category</option>
+                {tagOptions.map((t) => <option key={t} value={t}>{t[0].toUpperCase() + t.slice(1)}</option>)}
+                <option value={NEW_TAG}>New category…</option>
+              </select>
+            )}
+            <span className="field-hint">Groups your Owned list.</span>
           </div>
           {row.status === 'sold' && (
             <>
-              <div className="field">
-                <label htmlFor="f-sold">Sold for</label>
-                <input id="f-sold" maxLength={LIMITS.shortText} className="input" placeholder="3.5M" value={row.sold_for} onChange={set('sold_for')} {...inv('sold_for')} />
-                {err('sold_for')}
-              </div>
               <div className="field">
                 <label htmlFor="f-soldon">Sold on</label>
                 <input id="f-soldon" className="input" type="date" value={row.sold_on.slice(0, 10)} onChange={set('sold_on')} {...inv('sold_on')} />

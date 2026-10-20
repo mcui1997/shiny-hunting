@@ -3,8 +3,7 @@ import { Sprite } from '../components/Sprite';
 import { catchStatusPill, formatWhen } from '../components/ui';
 import { useDerived } from '../lib/derived';
 import { href } from '../lib/router';
-import { chronological, currentSpecies, formatCount, formatValue } from '../lib/stats';
-import { parseValue } from '../lib/csv';
+import { chronological, currentSpecies, formatCount } from '../lib/stats';
 import { usePref } from '../lib/prefs';
 import { useStore } from '../lib/store';
 import { DEFAULT_TAGS } from '../lib/types';
@@ -63,7 +62,6 @@ export function CaughtPage() {
             <span>Caught</span>
             <span className="num">Encounters</span>
             <span>Method · Location</span>
-            <span className="num">Value</span>
             <span />
           </div>
           {list.map((c) => {
@@ -94,7 +92,6 @@ export function CaughtPage() {
                   <span className="small muted owned-label">encounters</span>
                 </div>
                 <div className="owned-cell owned-where">{where || <span className="muted">—</span>}</div>
-                <div className="owned-cell num owned-value">{c.est_value ? formatValue(parseValue(c.est_value)) : '—'}</div>
                 <a className="btn btn--small owned-edit" href={href.editCatch(c.id)}>Edit<span className="sr-only"> {now}</span></a>
               </article>
             );
