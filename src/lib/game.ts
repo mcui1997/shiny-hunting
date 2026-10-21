@@ -103,15 +103,6 @@ export function hordeSpots(sp: Species, season?: Season | null): Spot[] {
 export const seasonsLabel = (seasons: Season[]) =>
   seasons.length === 0 ? 'Any season' : seasons.length === 4 ? 'All seasons' : SEASONS.filter((s) => seasons.includes(s)).join(' · ');
 
-/** One-line summary of the best horde spot, e.g. "Route 214 · Spring · 5x · 100% (Morning · Day)". */
-export function bestSpotLabel(sp: Species): string | null {
-  const s = hordeSpots(sp)[0];
-  if (!s) return null;
-  const t = s.bestTimes.length === 3 ? '' : ` (${s.bestTimes.join('/').toLowerCase()})`;
-  const verdict = s.best >= 100 ? 'solo' : `${s.best}%`;
-  return `${s.row.area} · ${seasonsLabel(s.row.seasons)} · ${s.row.size}x ${verdict}${t}`;
-}
-
 // ---------- hunt summary ----------
 
 export interface SeasonBest {

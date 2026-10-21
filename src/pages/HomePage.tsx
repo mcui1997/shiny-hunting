@@ -1,14 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
-import { Sprite } from '../components/Sprite';
+import { useState } from 'react';
+import { GoalMenu, MiniTile } from '../components/MiniTile';
 import { Totals } from '../components/Totals';
-import { Pill, SparkleIcon, STATUS_LABEL } from '../components/ui';
+import { Pill, STATUS_LABEL } from '../components/ui';
 import { makeResolver } from '../lib/data';
 import { useDerived } from '../lib/derived';
 import { href } from '../lib/router';
 import { currentSpecies } from '../lib/stats';
 import { useStore } from '../lib/store';
 import { PRIORITIES, PRIORITY_LABEL, type CatchStatus, type GoalRow } from '../lib/types';
-import { GoalControls } from '../components/GoalControls';
 
 const GROUPS = ['current', 'future', ''];
 const byName = <T extends { name: string }>(a: T, b: T) => a.name.localeCompare(b.name);
@@ -49,18 +48,12 @@ export function HomePage() {
             {owned.map((g) => {
               const sp = d.game.byName.get(g.name);
               const kept = g.status === 'kept';
+              if (!sp) return null;
               return (
-                <a key={`${g.name}|${g.status}`} className={`mini${kept ? ' mini--owned' : ' mini--gone'}`} href={sp ? href.species(sp.id) : href.caught()}>
-                  <span className="mini-art">
-                    {sp && <Sprite id={sp.id} name={g.name} shiny size={64} />}
-                    {kept && <SparkleIcon size={14} className="sparkle" />}
-                  </span>
-                  <span className="mini-name">{g.name}</span>
-                  <span className="mini-tags">
-                    {g.count > 1 && <Pill tone="gold">×{g.count}</Pill>}
-                    {!kept && <Pill tone="neutral">{STATUS_LABEL[g.status]}</Pill>}
-                  </span>
-                </a>
+                <MiniTile key={`${g.name}|${g.status}`} sp={sp} tone={kept ? 'owned' : 'gone'} tags={<>
+                  {g.count > 1 && <Pill tone="gold">×{g.count}</Pill>}
+                  {!kept && <Pill tone="neutral">{STATUS_LABEL[g.status]}</Pill>}
+                </>} />
               );
             })}
           </div>
@@ -95,35 +88,9 @@ function PlannedTile({ goal }: { goal: GoalRow }) {
   const d = useDerived()!;
   const sp = d.game.byName.get(goal.species)!;
   const progress = d.progress.get(goal.species);
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  // Close the quick editor on outside click or Escape.
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
-  }, [open]);
-
   return (
-    <div className="mini-wrap" ref={ref}>
-      <a className="mini" href={href.species(sp.id)}>
-        <span className="mini-art"><Sprite id={sp.id} name={sp.name} shiny size={64} /></span>
-        <span className="mini-name">{sp.name}</span>
-        <span className="mini-tags">
-          {progress?.kind === 'evolve' && <Pill tone="teal">Have {progress.from}</Pill>}
-        </span>
-      </a>
-      <button type="button" className="mini-more" aria-label={`Edit ${sp.name} goal`} aria-expanded={open} onClick={() => setOpen((o) => !o)}>⋯</button>
-      {open && (
-        <div className="mini-pop" role="dialog" aria-label={`${sp.name} goal`}>
-          <GoalControls goal={goal} />
-        </div>
-      )}
-    </div>
+    <MiniTile sp={sp} tags={progress?.kind === 'evolve' && <Pill tone="teal">Have {progress.from}</Pill>}
+      menu={<GoalMenu species={goal.species} goal={goal} />} />
   );
 }
 

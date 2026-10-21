@@ -1,7 +1,4 @@
 import type { ReactNode } from 'react';
-import type { GoalProgress } from '../lib/goals';
-import type { DexState } from '../lib/stats';
-import type { GoalRow } from '../lib/types';
 
 export function SparkleIcon({ size = 18, color = 'var(--sparkle)', className }: { size?: number; color?: string; className?: string }) {
   return (
@@ -25,20 +22,6 @@ export const dexNo = (id: number) => `#${String(id).padStart(3, '0')}`;
 
 export function Pill({ tone, children }: { tone: 'gold' | 'ember' | 'teal' | 'solid' | 'neutral' | 'ghost'; children: ReactNode }) {
   return <span className={`pill pill--${tone}`}>{children}</span>;
-}
-
-/** The badge in a dex card's corner: collection state first, then goal. */
-export function StatePill({ state, goal, progress, goneStatus }: { state: DexState; goal?: GoalRow; progress?: GoalProgress; goneStatus?: string }) {
-  if (state === 'owned') return <Pill tone="gold">Owned</Pill>;
-  if (state === 'evolved') return <Pill tone="gold">Evolved</Pill>;
-  if (state === 'gone' && !goal) return <Pill tone="neutral">{STATUS_LABEL[goneStatus ?? ''] ?? 'Gone'}</Pill>;
-  if (goal) {
-    if (progress?.kind === 'evolve') return <Pill tone="teal">Evolve to finish</Pill>;
-    if (goal.priority === 'current') return <Pill tone="ember">Current</Pill>;
-    return <Pill tone="teal">{goal.priority === 'future' ? 'Future' : 'Goal'}</Pill>;
-  }
-  if (state === 'line') return <Pill tone="neutral">In your line</Pill>;
-  return null;
 }
 
 export const STATUS_LABEL: Record<string, string> = { kept: 'Kept', sold: 'Sold', traded: 'Traded', fled: 'Fled' };
