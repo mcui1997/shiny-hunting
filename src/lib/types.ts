@@ -117,11 +117,11 @@ export type CatchColumn = (typeof CATCH_COLUMNS)[number];
 /** One catch. Every value is held as a string (blank = not set); helpers parse numbers and dates. */
 export type CatchRow = Record<CatchColumn, string>;
 
-export const GOAL_COLUMNS = ['species', 'priority', 'status', 'notes'] as const;
+export const GOAL_COLUMNS = ['species', 'priority', 'notes'] as const;
 export type GoalRow = Record<(typeof GOAL_COLUMNS)[number], string>;
-/** Anything else (including the old "paused") reads as planned. */
-export const GOAL_STATUSES = ['planned', 'hunting'] as const;
-export const PRIORITIES = ['P1', 'P2', 'P3'] as const;
+/** Goal groups. Blank = unplanned. Old files (P1–P3 and a hunting status) are converted on read. */
+export const PRIORITIES = ['current', 'future'] as const;
+export const PRIORITY_LABEL: Record<string, string> = { current: 'Current', future: 'Future', '': 'Unplanned' };
 
 export const NOTE_COLUMNS = ['species', 'notes'] as const;
 export type NoteRow = Record<(typeof NOTE_COLUMNS)[number], string>;

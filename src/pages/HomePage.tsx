@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Sprite } from '../components/Sprite';
+import { Totals } from '../components/Totals';
 import { Pill, SparkleIcon, STATUS_LABEL } from '../components/ui';
 import { makeResolver } from '../lib/data';
 import { useDerived } from '../lib/derived';
 import { href } from '../lib/router';
-import { currentSpecies, formatCount } from '../lib/stats';
+import { currentSpecies } from '../lib/stats';
 import { useStore } from '../lib/store';
-import { PRIORITIES, type CatchStatus, type GoalRow } from '../lib/types';
+import { PRIORITIES, PRIORITY_LABEL, type CatchStatus, type GoalRow } from '../lib/types';
 import { GoalControls } from '../components/GoalControls';
 
-const PRIORITY_ROWS: [string, string][] = [['P1', 'P1'], ['P2', 'P2'], ['P3', 'P3'], ['', 'No priority']];
+const GROUPS = ['current', 'future', ''];
 const byName = <T extends { name: string }>(a: T, b: T) => a.name.localeCompare(b.name);
 
 export function HomePage() {
@@ -34,12 +35,7 @@ export function HomePage() {
 
   return (
     <div className="stack" style={{ gap: 28 }}>
-      <p className="home-stats">
-        <span><strong>{s.total}</strong> {s.total === 1 ? 'shiny' : 'shinies'}</span>
-        <span><strong className="mono">{formatCount(s.encounters)}</strong> encounters</span>
-        {s.luck !== null && <span>luck <strong className="mono">{s.luck.toFixed(2)}×</strong></span>}
-        <span><strong>{planned.length}</strong> planned</span>
-      </p>
+      <Totals s={s} />
 
       <section aria-labelledby="owned-h" className="stack" style={{ gap: 12 }}>
         <div className="row row--between">
@@ -73,11 +69,12 @@ export function HomePage() {
 
       <section aria-labelledby="planned-h" className="stack" style={{ gap: 16 }}>
         <div className="row row--between">
-          <h2 id="planned-h" className="h2">Planned <span className="count">{planned.length}</span></h2>
+          <h2 id="planned-h" className="h2">Goals <span className="count">{planned.length}</span></h2>
           <AddGoal />
         </div>
-        {planned.length === 0 && <p className="empty">Nothing planned. Add a goal, or use + Goal on any Pokémon's page.</p>}
-        {PRIORITY_ROWS.map(([p, label]) => {
+        {planned.length === 0 && <p className="empty">No goals yet. Add one, or use + Goal on any Pokémon's page.</p>}
+        {GROUPS.map((p) => {
+          const label = PRIORITY_LABEL[p];
           const items = planned.filter((g) => g.priority === p).map((g) => ({ ...g, name: g.species })).sort(byName);
           if (!items.length) return null;
           return (
@@ -117,7 +114,6 @@ function PlannedTile({ goal }: { goal: GoalRow }) {
         <span className="mini-art"><Sprite id={sp.id} name={sp.name} shiny size={64} /></span>
         <span className="mini-name">{sp.name}</span>
         <span className="mini-tags">
-          {goal.status === 'hunting' && <Pill tone="ember">Hunting</Pill>}
           {progress?.kind === 'evolve' && <Pill tone="teal">Have {progress.from}</Pill>}
         </span>
       </a>
@@ -143,7 +139,7 @@ function AddGoal() {
     const name = makeResolver(d.game.names)(text);
     if (!name) { setError(`"${text.slice(0, 40)}" isn't a Pokémon name I recognize.`); return; }
     if (d.goals.has(name)) { setError(`${name} is already a goal.`); return; }
-    store.saveGoal({ species: name, priority, status: 'planned', notes: '' });
+    store.saveGoal({ species: name, priority, notes: '' });
     setText('');
     setError(null);
   }
@@ -156,8 +152,8 @@ function AddGoal() {
         onChange={(e) => { setText(e.target.value); setError(null); }} />
       <label className="sr-only" htmlFor="add-goal-p">Priority</label>
       <select id="add-goal-p" className="select select--compact" value={priority} onChange={(e) => setPriority(e.target.value)}>
-        <option value="">No priority</option>
-        {PRIORITIES.map((p) => <option key={p} value={p}>{p}</option>)}
+        {PRIORITIES.map((p) => <option key={p} value={p}>{PRIORITY_LABEL[p]}</option>)}
+        <option value="">{PRIORITY_LABEL['']}</option>
       </select>
       <button type="submit" className="btn btn--small btn--primary">Add</button>
       {error && <span id="add-goal-error" className="small" role="alert" style={{ color: 'var(--ember-ink)', flexBasis: '100%' }}>{error}</span>}

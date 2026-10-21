@@ -27,10 +27,10 @@ export function goalProgress(goal: GoalRow, catches: CatchRow[], game: Game): Go
   return { kind: 'open' };
 }
 
-const PRIORITY_ORDER: Record<string, number> = { P1: 0, P2: 1, P3: 2, '': 3 };
+const PRIORITY_ORDER: Record<string, number> = { current: 0, future: 1, '': 2 };
 
 export function sortGoals(goals: GoalRow[]): GoalRow[] {
   return [...goals].sort((a, b) =>
-    (PRIORITY_ORDER[a.priority] ?? 3) - (PRIORITY_ORDER[b.priority] ?? 3) ||
+    (PRIORITY_ORDER[a.priority] ?? 2) - (PRIORITY_ORDER[b.priority] ?? 2) ||
     a.species.localeCompare(b.species));
 }

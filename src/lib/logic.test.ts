@@ -228,7 +228,7 @@ describe('evolutions and goals', () => {
   const familyOf = (n: string) => game.byName.get(n)?.family;
 
   it('an unevolved Litwick leaves the Chandelure goal at "evolve to finish"', () => {
-    const p = goalProgress({ species: 'Chandelure', priority: 'P1', status: 'planned', notes: '' }, [litwick], game);
+    const p = goalProgress({ species: 'Chandelure', priority: 'P1', notes: '' }, [litwick], game);
     expect(p.kind).toBe('evolve');
     if (p.kind === 'evolve') expect(p.steps.map((s) => game.name(s.id))).toEqual(['Lampent', 'Chandelure']);
   });
@@ -238,7 +238,7 @@ describe('evolutions and goals', () => {
 
   it('evolving completes the goal and marks every stage it passed through', () => {
     const evolved = { ...litwick, current_form: 'Chandelure' };
-    expect(goalProgress({ species: 'Chandelure', priority: '', status: 'planned', notes: '' }, [evolved], game).kind).toBe('done');
+    expect(goalProgress({ species: 'Chandelure', priority: '', notes: '' }, [evolved], game).kind).toBe('done');
     const dex = new DexIndex([evolved], familyOf, stagesBetween);
     expect(dex.get('Chandelure').state).toBe('owned');
     expect(dex.get('Lampent').state).toBe('evolved');
@@ -267,12 +267,12 @@ describe('evolutions and goals', () => {
   it('a sold or fled shiny never completes a goal', () => {
     for (const status of ['sold', 'fled', 'traded']) {
       const c = { ...litwick, current_form: 'Chandelure', status };
-      expect(goalProgress({ species: 'Chandelure', priority: '', status: 'planned', notes: '' }, [c], game).kind).toBe('open');
+      expect(goalProgress({ species: 'Chandelure', priority: '', notes: '' }, [c], game).kind).toBe('open');
     }
   });
 
   it('a Gardevoir cannot finish a Gallade goal', () => {
     const g = make({ species: 'Ralts', current_form: 'Gardevoir' });
-    expect(goalProgress({ species: 'Gallade', priority: '', status: 'planned', notes: '' }, [g], game).kind).toBe('open');
+    expect(goalProgress({ species: 'Gallade', priority: '', notes: '' }, [g], game).kind).toBe('open');
   });
 });
