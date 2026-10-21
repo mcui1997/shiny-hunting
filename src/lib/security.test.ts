@@ -120,11 +120,19 @@ describe('URL hash', () => {
   });
   it('only accepts dex numbers for species pages', () => {
     expect(parseHash('#/p/607')).toEqual({ page: 'species', id: 607 });
-    expect(parseHash('#/p/607abc')).toEqual({ page: 'dex' });
-    expect(parseHash('#/p/-1')).toEqual({ page: 'dex' });
+    expect(parseHash('#/p/607abc')).toEqual({ page: 'home' });
+    expect(parseHash('#/p/-1')).toEqual({ page: 'home' });
   });
   it('caps lengths from the URL', () => {
     const r = parseHash(`#/catch/${'a'.repeat(100)}`);
     expect(r.page === 'catch-edit' && r.id.length).toBe(20);
+  });
+});
+
+describe('routes', () => {
+  it('home is the default; old #/goals links land on home; dex has its own route', () => {
+    expect(parseHash('')).toEqual({ page: 'home' });
+    expect(parseHash('#/goals')).toEqual({ page: 'home' });
+    expect(parseHash('#/dex')).toEqual({ page: 'dex' });
   });
 });

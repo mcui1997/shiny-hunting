@@ -1,3 +1,5 @@
+import { ABILITY_RENAME } from './abilities-en.mjs';
+
 // "Uses" tags: what a species is good for outside of battling, worked out by fixed rules from
 // its abilities and the moves it can learn. Nothing here is a judgement call.
 //
@@ -138,7 +140,7 @@ export function usesFor(m, { monsById, parentOf, accuracy }) {
   };
 
   // Abilities: same slot rules as the dex (first, second, hidden; "--" = none).
-  const [a, b, h] = m.abilities.map((x) => x.name);
+  const [a, b, h] = m.abilities.map((x) => ABILITY_RENAME[x.name] ?? x.name);
   const slots = [[a, false]];
   if (b && b !== a && b !== '--') slots.push([b, false]);
   if (h && h !== '--' && h !== a && h !== b) slots.push([h, true]);

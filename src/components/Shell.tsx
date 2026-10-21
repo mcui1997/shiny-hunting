@@ -44,7 +44,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
   return (
     <div className="wrap">
       <header className="header">
-        <a className="brand" href={href.dex()}>
+        <a className="brand" href={href.home()}>
           <span className="brand-mark"><SparkleIcon size={22} /></span>
           <span>
             <span className="brand-name">Shiny Hunting</span>
@@ -52,9 +52,9 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
           </span>
         </a>
         <nav className="nav" aria-label="Main">
-          {navLink('dex', href.dex(), 'Dex')}
+          {navLink('home', href.home(), 'Home')}
           {navLink('caught', href.caught(), 'Owned')}
-          {navLink('goals', href.goals(), 'Goals')}
+          {navLink('dex', href.dex(), 'Dex')}
           {navLink('stats', href.stats(), 'Stats')}
           <span className="nav-sep" aria-hidden="true" />
           <button type="button" className="btn" onClick={() => fileInput.current?.click()}>Import</button>

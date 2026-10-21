@@ -4,7 +4,7 @@ import { StoreProvider, useStore } from './lib/store';
 import { CatchEditPage } from './pages/CatchEditPage';
 import { CaughtPage } from './pages/CaughtPage';
 import { DexPage } from './pages/DexPage';
-import { GoalsPage } from './pages/GoalsPage';
+import { HomePage } from './pages/HomePage';
 import { SpeciesPage } from './pages/SpeciesPage';
 import { StatsPage } from './pages/StatsPage';
 
@@ -19,11 +19,11 @@ function Routes() {
     switch (route.page) {
       case 'species': page = <SpeciesPage key={route.id} id={route.id} />; break;
       case 'caught': page = <CaughtPage />; break;
-      case 'goals': page = <GoalsPage />; break;
+      case 'dex': page = <DexPage />; break;
       case 'stats': page = <StatsPage />; break;
       case 'catch-new': page = <CatchEditPage key={`new-${route.species ?? ''}`} species={route.species} />; break;
       case 'catch-edit': page = <CatchEditPage key={route.id} id={route.id} />; break;
-      default: page = <DexPage />;
+      default: page = <HomePage />;
     }
   }
   return <Shell route={route}>{page}</Shell>;

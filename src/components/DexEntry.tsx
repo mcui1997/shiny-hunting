@@ -22,31 +22,52 @@ function evLabel(ev: number[]) {
 export function DexEntry({ sp }: { sp: Species }) {
   const { dex } = sp;
   const total = dex.stats.reduce((a, b) => a + b, 0);
-  const uses = sp.uses.filter((u) => u.tag !== 'field');
+  // Ability uses are shown with the ability itself; this list is the move-based ones.
+  const uses = sp.uses
+    .filter((u) => u.tag !== 'field')
+    .map((u) => ({ ...u, items: u.items.filter((i) => !i.how.endsWith('ability')) }))
+    .filter((u) => u.items.length);
   const field = sp.uses.find((u) => u.tag === 'field');
   return (
     <section aria-labelledby="dex-h" className="panel">
-      <h2 id="dex-h" className="h2">Dex</h2>
-      <div className="dex-grid">
-        <div className="stack" style={{ gap: 16 }}>
-          <div className="stack" style={{ gap: 6 }}>
-            <span className="label">Abilities</span>
-            <div className="row" style={{ gap: 8 }}>
-              {dex.abilities.map((a) => (
-                <span key={a.name} className={`ability${a.hidden ? ' ability--hidden' : ''}`}>
-                  {a.name}{a.hidden && <span className="ability-tag">Hidden</span>}
-                </span>
+      <h2 id="dex-h" className="sr-only">Dex</h2>
+      <div className="stack" style={{ gap: 8 }}>
+        <span className="label">Abilities</span>
+        <ul className="abilities">
+          {dex.abilities.map((a) => (
+            <li key={a.name}>
+              <span className="ability-name">
+                {a.name}{a.hidden && <span className="ability-tag">Hidden</span>}
+              </span>
+              <span className="ability-text">
+                {a.field && <span className="ability-field">{a.field.replace(/^./, (c) => c.toUpperCase())}.</span>}
+                <span className={a.field ? 'muted' : undefined}>{a.effect}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {(uses.length > 0 || field) && (
+        <div className="stack" style={{ gap: 8 }}>
+          <span className="label">Moves worth knowing</span>
+          {uses.length > 0 && (
+            <ul className="uses">
+              {uses.map((u) => (
+                <li key={u.tag}>
+                  <span className="use-label">{u.label}</span>
+                  <span className="use-items">
+                    {u.items.map((it) => <UseLine key={it.name} tag={u.tag} label={u.label} item={it} />)}
+                  </span>
+                </li>
               ))}
-            </div>
-          </div>
-          <dl className="facts">
-            <div><dt>Egg groups</dt><dd>{dex.eggGroups.join(', ')}</dd></div>
-            <div><dt>Gender</dt><dd>{genderLabel(dex.female)}</dd></div>
-            <div><dt>Catch rate</dt><dd className="mono">{dex.catchRate}</dd></div>
-            <div><dt>EV yield</dt><dd>{evLabel(dex.evYield)}</dd></div>
-            {dex.tier && <div><dt>Tier</dt><dd>{dex.tier}</dd></div>}
-          </dl>
+            </ul>
+          )}
+          {field && <span className="small muted">Field moves: {field.items.map((f) => f.name).join(', ')}</span>}
         </div>
+      )}
+
+      <div className="dex-grid">
         <div className="stats" role="table" aria-label="Base stats">
           {dex.stats.map((v, i) => (
             <div key={i} className="stat" role="row">
@@ -61,27 +82,13 @@ export function DexEntry({ sp }: { sp: Species }) {
             <span />
           </div>
         </div>
-      </div>
-
-      <div className="stack" style={{ gap: 8 }}>
-        <span className="label">Uses</span>
-        {uses.length === 0 ? (
-          <span className="muted small">Nothing special outside of battle.</span>
-        ) : (
-          <ul className="uses">
-            {uses.map((u) => (
-              <li key={u.tag}>
-                <span className="use-label">{u.label}</span>
-                <span className="use-items">
-                  {u.items.map((it) => <UseLine key={it.name} tag={u.tag} label={u.label} item={it} />)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-        {field && (
-          <span className="small muted">Field moves: {field.items.map((f) => f.name).join(', ')}</span>
-        )}
+        <dl className="facts">
+          <div><dt>Egg groups</dt><dd>{dex.eggGroups.join(', ')}</dd></div>
+          <div><dt>Gender</dt><dd>{genderLabel(dex.female)}</dd></div>
+          <div><dt>Catch rate</dt><dd className="mono">{dex.catchRate}</dd></div>
+          <div><dt>EV yield</dt><dd>{evLabel(dex.evYield)}</dd></div>
+          {dex.tier && <div><dt>Tier</dt><dd>{dex.tier}</dd></div>}
+        </dl>
       </div>
     </section>
   );

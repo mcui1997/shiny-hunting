@@ -140,7 +140,7 @@ describe('dex facts', () => {
   it('no duplicate or placeholder abilities', () => {
     expect(dex('Magikarp').abilities.map((a) => a.name)).toEqual(['Swift Swim', 'Rattled']);
     expect(dex('Gastly').abilities.map((a) => a.name)).toEqual(['Levitate']);
-    expect(dex('Shedinja').abilities).toEqual([{ name: 'Wonder Guard', hidden: false }]);
+    expect(dex('Shedinja').abilities.map((a) => [a.name, a.hidden])).toEqual([['Wonder Guard', false]]);
     for (const p of game.list) expect(p.dex.abilities.some((a) => a.name === '--')).toBe(false);
   });
   it('base stats and gender', () => {
@@ -150,6 +150,15 @@ describe('dex facts', () => {
     expect(dex('Chansey').female).toBe(100);
     expect(dex('Gallade').female).toBe(0);
     expect(dex('Magnemite').female).toBeNull();
+  });
+});
+
+describe('ability text', () => {
+  it('every ability has an effect, field effects where PokeMMO has one', () => {
+    for (const p of game.list) for (const a of p.dex.abilities) expect(a.effect.length).toBeGreaterThan(5);
+    const flame = game.byName.get('Litwick')!.dex.abilities.find((a) => a.name === 'Flame Body')!;
+    expect(flame.field).toMatch(/50% faster/);
+    expect(game.byName.get('Butterfree')!.dex.abilities.some((a) => a.name === 'Compound Eyes')).toBe(true);
   });
 });
 
