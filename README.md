@@ -12,11 +12,12 @@
 ## What it does
 
 - **Home**: totals, owned shinies, then goals grouped Current / Future / Unplanned, with quick edits
-- **Dex** of all 649 Gen 1–5 Pokémon as small tiles, shiny or normal: search, season and solo-horde filters, a final-forms-only toggle, and a ⋯ on each tile to add it to a goal
+- **Dex** of all 649 Gen 1–5 Pokémon as small tiles, shiny or normal: search, season and solo-horde filters, final-forms and unowned toggles (together: what you're missing), Owned bubbles, and a ⋯ on each tile to add it to a goal
 - **Species pages** lead with abilities and what each does (PokeMMO's own effects, in and out of battle), then base stats, EV yield, egg groups, gender, catch rate, tier
 - **Uses** worked out from abilities and learnable moves: egg hatcher, Synchronize (20% in PokeMMO), Sweet Scent, False Swipe, sleep and paralysis moves, trapping, encounter-rate abilities
 - **Hunt summary**: best 5x horde share in each season, for the species and its earlier stages, with a link to the PokeMMO wiki
 - **Your log** of catches with evolutions, categories, and luck against 1 in 27,000 (donator status)
+- **Net worth** on Stats: kept shinies' values plus manual amounts for non-shiny Pokémon and cosmetics
 - **Edit on the site**, then export `tracker.json` and commit. No backend.
 - **Safe to import any file:** every entry is validated and size-capped, and the page runs under a strict Content Security Policy
 
@@ -33,7 +34,8 @@ Everything lives in one file, `public/data/tracker.json`. Each entry sits on its
   "goals": [
     {"species":"Xatu","priority":"current"}
   ],
-  "notes": []
+  "notes": [],
+  "worth": {"pokemon": 12000000, "cosmetics": 850000}
 }
 ```
 
@@ -53,6 +55,7 @@ Import on the site replaces all three lists; Export downloads the whole file.
 | `odds` | Leave out for 1 in 27,000 (donator status) |
 | `status` | `kept`, `sold`, `traded`, `fled` |
 | `tag` | Category for the Owned filter, e.g. `utility`, `cosmetic`, or your own |
+| `value` | Pokeyen. Counts toward net worth while kept; `2.5M` or `2500000` on the site |
 
 Also: `id`, `form`, `evolved_on`, `location`, `season`, `nature`, `ivs`, `ball`, `sold_on`.
 Goals have `species` and `priority`: `current`, `future`, or left out for unplanned. Older files with P1–P3 and a hunting status are converted on import.

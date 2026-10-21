@@ -1,6 +1,7 @@
 import {
   CATCH_COLUMNS, CATCH_STATUSES, GOAL_COLUMNS, METHODS, NATURES, NOTE_COLUMNS,
-  SEASONS, type CatchRow, type CatchStatus, type FileKey, type GoalRow, type NoteRow,
+  SEASONS, WORTH_COLUMNS, WORTH_ITEMS, type CatchRow, type CatchStatus, type FileKey, type GoalRow, type NoteRow,
+  type WorthRow,
 } from './types';
 
 // ---------- limits ----------
@@ -15,6 +16,8 @@ export const LIMITS = {
   /** Longest short field (location, ball, IVs, names…). */
   shortText: 120,
   maxCount: 1_000_000_000,
+  /** Largest pokeyen value accepted (a trillion). */
+  maxValue: 1_000_000_000_000,
   minOdds: 2,
 };
 
@@ -38,21 +41,23 @@ export function cleanText(raw: unknown, max: number, multiline = false): { text:
 }
 
 // ---------- tracker.json ----------
-// All of your data lives in one file: { version, caught: [...], goals: [...], notes: [...] }.
+// All of your data lives in one file: { version, caught: [...], goals: [...], notes: [...], worth: {...} }.
+// `worth` is an object ({"pokemon": 5000000, "cosmetics": 1200000}); internally it's rows like the rest.
 // Blank fields are left out, encounters and odds are numbers. Everything read from it goes
 // through the normalizers below, exactly like edits made on the site.
 
 export const FORMAT_VERSION = 1;
-export const SECTIONS: readonly FileKey[] = ['caught', 'goals', 'notes'];
+export const SECTIONS: readonly FileKey[] = ['caught', 'goals', 'notes', 'worth'];
 
 export interface RawTracker {
   caught: Record<string, string>[];
   goals: Record<string, string>[];
   notes: Record<string, string>[];
+  worth: Record<string, string>[];
   issues: string[];
 }
 
-export const SECTION_LABEL: Record<FileKey, string> = { caught: 'Caught', goals: 'Goals', notes: 'Notes' };
+export const SECTION_LABEL: Record<FileKey, string> = { caught: 'Caught', goals: 'Goals', notes: 'Notes', worth: 'Worth' };
 
 const isPlainObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
@@ -85,16 +90,26 @@ export function parseTracker(text: string): RawTracker {
   } catch {
     throw new ImportError("That file isn't valid JSON.");
   }
-  if (!isPlainObject(data) || !SECTIONS.some((s) => Object.prototype.hasOwnProperty.call(data, s))) {
+  if (!isPlainObject(data) || !(['caught', 'goals', 'notes'] as const).some((s) => Object.prototype.hasOwnProperty.call(data, s))) {
     throw new ImportError("That doesn't look like a tracker.json (no caught, goals or notes).");
   }
   if ('version' in data && (typeof data.version !== 'number' || data.version > FORMAT_VERSION)) {
     throw new ImportError(`That file is format version ${String(data.version).slice(0, 10)}; this site reads version ${FORMAT_VERSION}.`);
   }
   const issues: string[] = [];
-  const out: RawTracker = { caught: [], goals: [], notes: [], issues };
+  const out: RawTracker = { caught: [], goals: [], notes: [], worth: [], issues };
   for (const s of SECTIONS) {
     if (!Object.prototype.hasOwnProperty.call(data, s)) continue;
+    if (s === 'worth') {
+      const w = data.worth;
+      if (!isPlainObject(w)) { issues.push('Worth: should be an object like {"pokemon": 5000000}. Ignored it.'); continue; }
+      for (const item of WORTH_ITEMS) {
+        if (!Object.prototype.hasOwnProperty.call(w, item)) continue;
+        const row = flatEntry({ item, value: w[item] }, WORTH_COLUMNS, `Worth ${item}`, issues);
+        if (row) out.worth.push(row);
+      }
+      continue;
+    }
     const list = data[s];
     if (!Array.isArray(list)) { issues.push(`${SECTION_LABEL[s]}: should be a list. Ignored it.`); continue; }
     let items = list;
@@ -110,7 +125,7 @@ export function parseTracker(text: string): RawTracker {
   return out;
 }
 
-const NUMBER_FIELDS = new Set(['encounters', 'odds']);
+const NUMBER_FIELDS = new Set(['encounters', 'odds', 'value']);
 
 /** Blank fields left out; counts written as numbers. */
 function compact(row: Record<string, string>, cols: readonly string[]) {
@@ -118,14 +133,19 @@ function compact(row: Record<string, string>, cols: readonly string[]) {
   for (const c of cols) {
     const v = row[c] ?? '';
     if (v === '') continue;
-    o[c] = NUMBER_FIELDS.has(c) && /^\d{1,10}$/.test(v) ? Number(v) : v;
+    o[c] = NUMBER_FIELDS.has(c) && /^\d{1,13}$/.test(v) ? Number(v) : v;
   }
   return o;
 }
 
 /** tracker.json text, one entry per line so GitHub diffs show exactly which catch changed. */
-export function toTrackerJson(rows: { caught: CatchRow[]; goals: GoalRow[]; notes: NoteRow[] }): string {
+export function toTrackerJson(rows: { caught: CatchRow[]; goals: GoalRow[]; notes: NoteRow[]; worth?: WorthRow[] }): string {
   const list = (s: FileKey) => {
+    if (s === 'worth') {
+      const w: Record<string, number> = {};
+      for (const r of rows.worth ?? []) if (/^\d{1,13}$/.test(r.value)) w[r.item] = Number(r.value);
+      return JSON.stringify(w).replace(/,/g, ', ');
+    }
     const items = (rows[s] as Record<string, string>[]).map((r) => '    ' + JSON.stringify(compact(r, COLUMNS[s])));
     return items.length ? `[\n${items.join(',\n')}\n  ]` : '[]';
   };
@@ -133,6 +153,29 @@ export function toTrackerJson(rows: { caught: CatchRow[]; goals: GoalRow[]; note
 }
 
 // ---------- value parsing ----------
+
+/**
+ * Pokeyen amounts: "2500000", "2,500,000", "2.5M", "850k", "1.2b" -> whole number.
+ * Blank, junk, negative or over a trillion -> null.
+ */
+export function parseValue(raw: string | undefined): number | null {
+  const s = (raw ?? '').trim().toLowerCase().replace(/[,\s_]/g, '').replace(/^[¥₽$]/, '');
+  const m = /^(\d{1,13}(?:\.\d{1,3})?)([kmb])?$/.exec(s);
+  if (!m) return null;
+  const mult = m[2] === 'k' ? 1e3 : m[2] === 'm' ? 1e6 : m[2] === 'b' ? 1e9 : 1;
+  if (!m[2] && m[1].includes('.')) return null;
+  const n = Math.round(Number(m[1]) * mult);
+  return Number.isSafeInteger(n) && n <= LIMITS.maxValue ? n : null;
+}
+
+/** 12400000 -> "12.4M", 850000 -> "850K", 1230000000 -> "1.23B". */
+export function formatValue(n: number): string {
+  const short = (x: number, unit: string) => `${Number(x.toPrecision(3)).toLocaleString('en-US')}${unit}`;
+  if (n >= 1e9) return short(n / 1e9, 'B');
+  if (n >= 1e6) return short(n / 1e6, 'M');
+  if (n >= 1e4) return short(n / 1e3, 'K');
+  return n.toLocaleString('en-US');
+}
 
 /** Whole numbers only: "26,321" -> 26321. Blank, junk, or over a billion -> null. */
 export function parseCount(raw: string | undefined): number | null {
@@ -262,6 +305,11 @@ export function normalizeCatches(input: Record<string, unknown>[], resolve: Reso
       if (n === null) { issues.push(`Entry ${line}: encounters "${row.encounters}" isn't a whole number. Cleared it.`); row.encounters = ''; }
       else row.encounters = String(n);
     }
+    if (row.value) {
+      const n = parseValue(row.value);
+      if (n === null) { issues.push(`Entry ${line}: value "${row.value}" isn't an amount like 2500000 or 2.5M. Cleared it.`); row.value = ''; }
+      else row.value = String(n);
+    }
     if (row.odds) {
       const n = parseCount(row.odds);
       if (n === null || n < LIMITS.minOdds) { issues.push(`Entry ${line}: odds "${row.odds}" should be a number like 27000. Using the default.`); row.odds = ''; }
@@ -373,10 +421,27 @@ export function normalizeNotes(input: Record<string, unknown>[], resolve: Resolv
   return { rows: [...bySpecies.values()], issues };
 }
 
+export function normalizeWorth(input: Record<string, unknown>[]): Normalized<WorthRow> {
+  const issues: string[] = [];
+  const byItem = new Map<string, WorthRow>();
+  for (const raw of tooMany(input, issues) as Record<string, unknown>[]) {
+    if (!raw || typeof raw !== 'object') continue;
+    const item = typeof raw.item === 'string' ? raw.item : '';
+    if (!(WORTH_ITEMS as readonly string[]).includes(item)) continue;
+    const v = raw.value === undefined || raw.value === null ? '' : String(raw.value);
+    if (v === '') continue;
+    const n = parseValue(v);
+    if (n === null) { issues.push(`Worth ${item}: "${v.slice(0, 30)}" isn't an amount like 2500000 or 2.5M. Cleared it.`); continue; }
+    byItem.set(item, { item, value: String(n) });
+  }
+  return { rows: WORTH_ITEMS.map((i) => byItem.get(i)).filter((r): r is WorthRow => !!r), issues };
+}
+
 export const COLUMNS: Record<FileKey, readonly string[]> = {
   caught: CATCH_COLUMNS,
   goals: GOAL_COLUMNS,
   notes: NOTE_COLUMNS,
+  worth: WORTH_COLUMNS,
 };
 
 /** Fields read from a file: the current ones plus `status` on goals, kept only to convert old files. */

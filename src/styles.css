@@ -382,3 +382,13 @@ select:hover, .select:hover { color: var(--ink); border-color: var(--moss); }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2355615C' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 12px center; background-size: 12px; }
 .select--compact { padding-right: 30px; background-position: right 10px center; }
+
+/* ---------- net worth ---------- */
+.stats-top { display: grid; grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr); gap: 16px; align-items: stretch; }
+.stats-top .tiles { margin: 0; }
+.worth { gap: 12px; position: relative; }
+.worth-edit { position: static; flex: none; }
+.worth-lines { display: flex; flex-direction: column; gap: 6px; }
+.worth-line { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 14px; }
+.worth-line .mono { font-weight: 600; }
+@media (max-width: 900px) { .stats-top { grid-template-columns: minmax(0, 1fr); } }

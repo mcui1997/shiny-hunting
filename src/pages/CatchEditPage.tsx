@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { Sprite } from '../components/Sprite';
 import { BackLink } from '../components/ui';
-import { LIMITS, makeResolver, normalizeTag, parseCount, parseDateTime } from '../lib/data';
+import { LIMITS, makeResolver, normalizeTag, parseCount, parseDateTime, parseValue } from '../lib/data';
 import { useDerived } from '../lib/derived';
 import { go, href } from '../lib/router';
 import { useStore } from '../lib/store';
@@ -59,6 +59,8 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
       if (row[k] && parseCount(row[k]) === null) er[k] = 'Whole number, like 21201.';
       else if (row[k]) out[k] = String(parseCount(row[k]));
     }
+    if (row.value && parseValue(row.value) === null) er.value = 'An amount like 2500000 or 2.5M.';
+    else if (row.value) out.value = String(parseValue(row.value));
     for (const k of ['evolved_on', 'sold_on'] as const) {
       if (row[k] && !parseDateTime(row[k])) er[k] = 'Use a date like 2026-10-20.';
     }
@@ -188,6 +190,12 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
           <div className="field">
             <label htmlFor="f-form">Form</label>
             <input id="f-form" maxLength={LIMITS.shortText} className="input" placeholder="Only for Unown, Deerling, etc." value={row.form} onChange={set('form')} />
+          </div>
+          <div className="field">
+            <label htmlFor="f-value">Value</label>
+            <input id="f-value" maxLength={30} className="input mono" placeholder="e.g. 2.5M" value={row.value} onChange={set('value')} {...inv('value')} />
+            <span className="field-hint">Pokeyen. Adds to your net worth on Stats while you keep it.</span>
+            {err('value')}
           </div>
           <div className="field">
             <label htmlFor="f-odds">Odds (1 in …)</label>
