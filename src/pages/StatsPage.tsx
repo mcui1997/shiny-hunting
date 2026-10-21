@@ -13,8 +13,6 @@ export function StatsPage() {
   const s = d.summary;
   const hunts = chronological(rows.caught).filter((c) => countsForLuck(c) && (parseCount(c.encounters) ?? 0) > 0);
   const max = Math.max(DEFAULT_ODDS * 1.5, ...hunts.map((c) => parseCount(c.encounters)!));
-  const byMethod = new Map<string, number>();
-  for (const c of rows.caught) byMethod.set(c.method || 'not entered', (byMethod.get(c.method || 'not entered') ?? 0) + 1);
 
   return (
     <div className="stack" style={{ gap: 24 }}>
@@ -69,18 +67,6 @@ export function StatsPage() {
         </section>
       )}
 
-      <section className="panel" aria-labelledby="method-h">
-        <h2 id="method-h" className="h2">By method</h2>
-        <div className="row">
-          {[...byMethod.entries()].sort((a, b) => b[1] - a[1]).map(([m, n]) => (
-            <span key={m} className="pill pill--neutral" style={{ fontSize: 14 }}>{m}: {n}</span>
-          ))}
-        </div>
-      </section>
-
-      <p className="small muted" style={{ margin: 0 }}>
-        Encounter data: <a href={d.game.data.source.url}>{d.game.data.source.name}</a> as of {formatWhen(d.game.data.source.date).date}. Your data: tracker.json in the repo.
-      </p>
     </div>
   );
 }

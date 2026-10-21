@@ -132,7 +132,6 @@ export function HuntSummaryPanel({ sp, family, game }: { sp: Species; family: Sp
           {line.map((f) => <HuntLine key={f.id} sp={f} showName={line.length > 1 || f.id !== sp.id} />)}
         </ul>
       )}
-      <span className="small muted">From <a href={game.data.source.url}>{game.data.source.name}</a>. Check the wiki before a long hunt.</span>
     </section>
   );
 }

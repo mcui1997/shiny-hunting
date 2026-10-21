@@ -12,7 +12,7 @@
 ## What it does
 
 - **Home**: totals, owned shinies, then goals grouped Current / Future / Unplanned, with quick edits
-- **Dex** of all 649 Gen 1–5 Pokémon in shiny and normal, searchable, with season and solo-horde filters
+- **Dex** of all 649 Gen 1–5 Pokémon as small tiles, shiny or normal: search, season and solo-horde filters, a final-forms-only toggle, and a ⋯ on each tile to add it to a goal
 - **Species pages** lead with abilities and what each does (PokeMMO's own effects, in and out of battle), then base stats, EV yield, egg groups, gender, catch rate, tier
 - **Uses** worked out from abilities and learnable moves: egg hatcher, Synchronize (20% in PokeMMO), Sweet Scent, False Swipe, sleep and paralysis moves, trapping, encounter-rate abilities
 - **Hunt summary**: best 5x horde share in each season, for the species and its earlier stages, with a link to the PokeMMO wiki

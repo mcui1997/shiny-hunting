@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Sprite } from '../components/Sprite';
-import { dexNo, formatWhen, SparkleIcon, StatePill } from '../components/ui';
+import { GoalMenu, MiniTile } from '../components/MiniTile';
+import { Pill, SparkleIcon, STATUS_LABEL } from '../components/ui';
 import { useDerived } from '../lib/derived';
-import { bestSpotLabel, hordeSpots } from '../lib/game';
+import { hordeSpots } from '../lib/game';
 import { usePref } from '../lib/prefs';
-import { href } from '../lib/router';
-import { currentSpecies, formatCount, isMineState, isOwnedState } from '../lib/stats';
-import { SEASONS, type Season, type Species } from '../lib/types';
+import { formatCount, isOwnedState } from '../lib/stats';
+import { PRIORITY_LABEL, SEASONS, type Season, type Species } from '../lib/types';
 
-const PAGE = 120;
+const PAGE = 240;
 
 export function DexPage() {
   const d = useDerived()!;
@@ -16,12 +15,16 @@ export function DexPage() {
   const [query, setQuery] = useState('');
   const [season, setSeason] = useState<Season | null>(null);
   const [soloOnly, setSoloOnly] = useState(false);
+  const [finalPref, setFinalPref] = usePref<'all' | 'final'>('dex-forms', 'all');
+  const finalOnly = finalPref === 'final';
   const [limit, setLimit] = useState(PAGE);
   const shiny = mode === 'shiny';
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
     return d.game.list.filter((sp) => {
+      // Final forms: nothing left to evolve into (single-stage Pokémon count).
+      if (finalOnly && sp.evolvesTo.length > 0) return false;
       if (season || soloOnly) {
         const spots = hordeSpots(sp, season);
         if (!spots.length) return false;
@@ -34,9 +37,9 @@ export function DexPage() {
       }
       return true;
     });
-  }, [d, query, season, soloOnly]);
+  }, [d, query, season, soloOnly, finalOnly]);
 
-  useEffect(() => setLimit(PAGE), [query, season, soloOnly]);
+  useEffect(() => setLimit(PAGE), [query, season, soloOnly, finalOnly]);
 
   const sentinel = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -71,6 +74,10 @@ export function DexPage() {
             <input type="checkbox" checked={soloOnly} onChange={(e) => setSoloOnly(e.target.checked)} />
             Solo spots only
           </label>
+          <label className="check">
+            <input type="checkbox" checked={finalOnly} onChange={(e) => setFinalPref(e.target.checked ? 'final' : 'all')} />
+            Final forms only
+          </label>
           <span className="small muted" style={{ marginLeft: 'auto' }} aria-live="polite">
             Showing {formatCount(list.length)} of {formatCount(d.game.list.length)}
           </span>
@@ -79,8 +86,8 @@ export function DexPage() {
         {list.length === 0 ? (
           <p className="empty">Nothing matches those filters.</p>
         ) : (
-          <div className="grid">
-            {list.slice(0, limit).map((sp) => <DexCard key={sp.id} sp={sp} shiny={shiny} />)}
+          <div className="mini-grid">
+            {list.slice(0, limit).map((sp) => <DexTile key={sp.id} sp={sp} shiny={shiny} />)}
           </div>
         )}
         {limit < list.length && (
@@ -93,45 +100,18 @@ export function DexPage() {
   );
 }
 
-function DexCard({ sp, shiny }: { sp: Species; shiny: boolean }) {
+function DexTile({ sp, shiny }: { sp: Species; shiny: boolean }) {
   const d = useDerived()!;
   const entry = d.dex.get(sp.name);
   const goal = d.goals.get(sp.name);
   const progress = d.progress.get(sp.name);
-  const mine = isMineState(entry.state);
   const latest = entry.catches[0];
-
-  let sub: string | null = null;
-  if (latest) {
-    const enc = latest.encounters ? `${formatCount(Number(latest.encounters))} enc · ` : '';
-    const now = currentSpecies(latest);
-    sub = `${enc}${formatWhen(latest.caught_at).date}`;
-    if (now === sp.name && latest.species !== sp.name) sub = `Caught as ${latest.species}`;
-    else if (now !== sp.name) sub = `Evolved into ${now}`;
-  } else if (progress?.kind === 'evolve') {
-    sub = `Have ${progress.from}`;
-  } else if (!sp.obtainable && sp.hordes.length + sp.singles.length + sp.rare.length === 0) {
-    sub = 'No regular encounter';
-  } else {
-    const rareOnly = sp.rare.length && sp.rare.every((r) => r.kind === 'Lure') ? 'Lure encounters only' : 'Special encounters only';
-    sub = bestSpotLabel(sp) ?? (sp.singles.length ? 'Single encounters only' : sp.rare.length ? rareOnly : 'Not found in the wild');
+  const tone = isOwnedState(entry.state) ? 'owned' : entry.state === 'gone' ? 'gone' : undefined;
+  let tag = null;
+  if (entry.state === 'gone') tag = <Pill tone="neutral">{STATUS_LABEL[latest?.status ?? ''] ?? 'Gone'}</Pill>;
+  else if (goal && progress?.kind !== 'done') {
+    tag = progress?.kind === 'evolve' ? <Pill tone="teal">Have {progress.from}</Pill>
+      : <Pill tone={goal.priority === 'current' ? 'ember' : 'teal'}>{PRIORITY_LABEL[goal.priority] === 'Unplanned' ? 'Goal' : PRIORITY_LABEL[goal.priority]}</Pill>;
   }
-
-  const cls = ['card', mine ? 'card--gilt' : '', !sp.obtainable && !mine ? 'card--unobtainable' : ''].filter(Boolean).join(' ');
-  return (
-    <a className={cls} href={href.species(sp.id)}>
-      <div className="card-top">
-        <span className="mono small muted">{dexNo(sp.id)}</span>
-        <StatePill state={entry.state} goal={goal} progress={progress} goneStatus={latest?.status} />
-      </div>
-      <div className="card-tile">
-        <Sprite id={sp.id} name={sp.name} shiny={shiny} size={104} />
-        {isOwnedState(entry.state) && shiny && <SparkleIcon className="sparkle" />}
-      </div>
-      <div>
-        <div className="card-name">{sp.name}</div>
-        {sub && <div className="card-sub">{sub}</div>}
-      </div>
-    </a>
-  );
+  return <MiniTile sp={sp} shiny={shiny} tone={tone} tags={tag} menu={<GoalMenu species={sp.name} goal={goal} />} />;
 }
