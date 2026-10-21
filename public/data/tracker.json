@@ -72,5 +72,6 @@
     {"species":"Paras","priority":"current"},
     {"species":"Spinda","priority":"current"}
   ],
-  "notes": []
+  "notes": [],
+  "worth": {}
 }

@@ -1,3 +1,4 @@
+import { NetWorth } from '../components/NetWorth';
 import { Totals } from '../components/Totals';
 import { formatWhen } from '../components/ui';
 import { parseCount } from '../lib/data';
@@ -17,7 +18,10 @@ export function StatsPage() {
   return (
     <div className="stack" style={{ gap: 24 }}>
       <h1 className="h1">Stats</h1>
-      <Totals s={s} />
+      <div className="stats-top">
+        <Totals s={s} />
+        <NetWorth />
+      </div>
 
       <section className="panel" aria-labelledby="luck-h">
         <h2 id="luck-h" className="h2">Luck</h2>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  ImportError, makeResolver, normalizeCatches, normalizeGoals, normalizeNotes, normalizeTag, parseCount, parseDateTime,
+  formatValue, ImportError, makeResolver, normalizeWorth, parseValue, normalizeCatches, normalizeGoals, normalizeNotes, normalizeTag, parseCount, parseDateTime,
   parseTracker, toTrackerJson,
 } from './data';
 import { CATCH_COLUMNS, type CatchRow } from './types';
@@ -199,5 +199,41 @@ describe('tags', () => {
   it('an entry without a tag still imports', () => {
     const r = normalizeCatches(parseTracker('{"caught":[{"species":"Aron","caught_at":"2026-09-23"}]}').caught, resolve);
     expect(r.rows[0].tag).toBe('');
+  });
+});
+
+describe('values and net worth', () => {
+  it.each([
+    ['2500000', 2500000], ['2,500,000', 2500000], ['2.5M', 2500000], ['2.5m', 2500000],
+    ['850k', 850000], ['1.2b', 1200000000], ['¥3m', 3000000], ['0', 0],
+  ])('reads %s', (raw, n) => expect(parseValue(raw)).toBe(n));
+  it.each(['', 'lots', '-5', '2.5', '1e6', '2..5m', '9999b', '1.2345m'])('rejects %j', (raw) => expect(parseValue(raw)).toBeNull());
+  it('formats short', () => {
+    expect(formatValue(12400000)).toBe('12.4M');
+    expect(formatValue(850000)).toBe('850K');
+    expect(formatValue(1230000000)).toBe('1.23B');
+    expect(formatValue(9500)).toBe('9,500');
+    expect(formatValue(0)).toBe('0');
+  });
+  it('a catch value is stored as a number and written as one', () => {
+    const r = normalizeCatches([{ species: 'Aron', caught_at: '2026-09-23', value: '2.5M' }], resolve);
+    expect(r.rows[0].value).toBe('2500000');
+    const text = toTrackerJson({ caught: r.rows, goals: [], notes: [] });
+    expect(JSON.parse(text).caught[0].value).toBe(2500000);
+    const bad = normalizeCatches([{ species: 'Aron', caught_at: '2026-09-23', value: 'a lot' }], resolve);
+    expect(bad.rows[0].value).toBe('');
+    expect(bad.issues.join(' ')).toMatch(/value/);
+  });
+  it('worth round-trips as an object and only keeps known items', () => {
+    const raw = parseTracker('{"caught":[],"worth":{"pokemon":"5m","cosmetics":1200000,"house":9}}');
+    const w = normalizeWorth(raw.worth);
+    expect(w.rows).toEqual([{ item: 'pokemon', value: '5000000' }, { item: 'cosmetics', value: '1200000' }]);
+    const text = toTrackerJson({ caught: [], goals: [], notes: [], worth: w.rows });
+    expect(JSON.parse(text).worth).toEqual({ pokemon: 5000000, cosmetics: 1200000 });
+  });
+  it('a file without worth still reads, and bad worth is reported', () => {
+    expect(parseTracker('{"caught":[]}').worth).toEqual([]);
+    expect(parseTracker('{"caught":[],"worth":[1,2]}').issues.join(' ')).toMatch(/Worth/);
+    expect(normalizeWorth([{ item: 'pokemon', value: 'tons' }]).issues).toHaveLength(1);
   });
 });

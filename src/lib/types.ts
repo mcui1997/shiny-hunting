@@ -108,7 +108,7 @@ export const NON_HUNT_METHODS = ['traded', 'bought'];
 export const CATCH_COLUMNS = [
   'id', 'species', 'form', 'current_form', 'evolved_on', 'caught_at', 'encounters', 'method',
   'location', 'season', 'nature', 'ivs', 'ball', 'odds', 'status', 'sold_on',
-  'tag',
+  'tag', 'value',
 ] as const;
 
 /** Suggested categories for grouping owned shinies. Any short tag works. */
@@ -126,7 +126,13 @@ export const PRIORITY_LABEL: Record<string, string> = { current: 'Current', futu
 export const NOTE_COLUMNS = ['species', 'notes'] as const;
 export type NoteRow = Record<(typeof NOTE_COLUMNS)[number], string>;
 
-export type FileKey = 'caught' | 'goals' | 'notes';
+/** Manual parts of net worth (in pokeyen). Shiny value comes from each kept catch's `value`. */
+export const WORTH_ITEMS = ['pokemon', 'cosmetics'] as const;
+export const WORTH_LABEL: Record<string, string> = { pokemon: 'Non-shiny Pokémon', cosmetics: 'Cosmetics' };
+export const WORTH_COLUMNS = ['item', 'value'] as const;
+export type WorthRow = Record<(typeof WORTH_COLUMNS)[number], string>;
+
+export type FileKey = 'caught' | 'goals' | 'notes' | 'worth';
 
 export const NATURES = [
   'Adamant', 'Bashful', 'Bold', 'Brave', 'Calm', 'Careful', 'Docile', 'Gentle', 'Hardy', 'Hasty',

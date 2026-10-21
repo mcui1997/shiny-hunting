@@ -17,6 +17,8 @@ export function DexPage() {
   const [soloOnly, setSoloOnly] = useState(false);
   const [finalPref, setFinalPref] = usePref<'all' | 'final'>('dex-forms', 'all');
   const finalOnly = finalPref === 'final';
+  const [ownPref, setOwnPref] = usePref<'all' | 'unowned'>('dex-owned', 'all');
+  const unownedOnly = ownPref === 'unowned';
   const [limit, setLimit] = useState(PAGE);
   const shiny = mode === 'shiny';
 
@@ -25,6 +27,8 @@ export function DexPage() {
     return d.game.list.filter((sp) => {
       // Final forms: nothing left to evolve into (single-stage Pokémon count).
       if (finalOnly && sp.evolvesTo.length > 0) return false;
+      // Unowned: no shiny you still have is this species now (or passed through it).
+      if (unownedOnly && isOwnedState(d.dex.get(sp.name).state)) return false;
       if (season || soloOnly) {
         const spots = hordeSpots(sp, season);
         if (!spots.length) return false;
@@ -37,9 +41,9 @@ export function DexPage() {
       }
       return true;
     });
-  }, [d, query, season, soloOnly, finalOnly]);
+  }, [d, query, season, soloOnly, finalOnly, unownedOnly]);
 
-  useEffect(() => setLimit(PAGE), [query, season, soloOnly, finalOnly]);
+  useEffect(() => setLimit(PAGE), [query, season, soloOnly, finalOnly, unownedOnly]);
 
   const sentinel = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -78,6 +82,10 @@ export function DexPage() {
             <input type="checkbox" checked={finalOnly} onChange={(e) => setFinalPref(e.target.checked ? 'final' : 'all')} />
             Final forms only
           </label>
+          <label className="check">
+            <input type="checkbox" checked={unownedOnly} onChange={(e) => setOwnPref(e.target.checked ? 'unowned' : 'all')} />
+            Unowned
+          </label>
           <span className="small muted" style={{ marginLeft: 'auto' }} aria-live="polite">
             Showing {formatCount(list.length)} of {formatCount(d.game.list.length)}
           </span>
@@ -108,7 +116,9 @@ function DexTile({ sp, shiny }: { sp: Species; shiny: boolean }) {
   const latest = entry.catches[0];
   const tone = isOwnedState(entry.state) ? 'owned' : entry.state === 'gone' ? 'gone' : undefined;
   let tag = null;
-  if (entry.state === 'gone') tag = <Pill tone="neutral">{STATUS_LABEL[latest?.status ?? ''] ?? 'Gone'}</Pill>;
+  if (entry.state === 'owned') tag = <Pill tone="gold">Owned</Pill>;
+  else if (entry.state === 'evolved') tag = <Pill tone="gold">Evolved</Pill>;
+  else if (entry.state === 'gone') tag = <Pill tone="neutral">{STATUS_LABEL[latest?.status ?? ''] ?? 'Gone'}</Pill>;
   else if (goal && progress?.kind !== 'done') {
     tag = progress?.kind === 'evolve' ? <Pill tone="teal">Have {progress.from}</Pill>
       : <Pill tone={goal.priority === 'current' ? 'ember' : 'teal'}>{PRIORITY_LABEL[goal.priority] === 'Unplanned' ? 'Goal' : PRIORITY_LABEL[goal.priority]}</Pill>;

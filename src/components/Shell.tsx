@@ -8,7 +8,7 @@ import { SparkleIcon } from './ui';
 const FILE_NAME = 'tracker.json';
 
 const describe = (c: Record<FileKey, number>) =>
-  `${c.caught} ${c.caught === 1 ? 'catch' : 'catches'}, ${c.goals} ${c.goals === 1 ? 'goal' : 'goals'}, ${c.notes} ${c.notes === 1 ? 'note' : 'notes'}`;
+  `${c.caught} ${c.caught === 1 ? 'catch' : 'catches'}, ${c.goals} ${c.goals === 1 ? 'goal' : 'goals'}`;
 
 export function Shell({ route, children }: { route: Route; children: ReactNode }) {
   const store = useStore();

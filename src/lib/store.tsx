@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   hashText, ImportError, LIMITS, makeResolver, nextCatchId, normalizeCatches, normalizeGoals,
-  normalizeNotes, parseTracker, SECTION_LABEL, SECTIONS, toTrackerJson, type RawTracker, type Resolve,
+  normalizeNotes, normalizeWorth, parseTracker, SECTION_LABEL, SECTIONS, toTrackerJson, type RawTracker, type Resolve,
 } from './data';
 import { Game } from './game';
-import type { CatchRow, FileKey, GameData, GoalRow, NoteRow } from './types';
+import type { CatchRow, FileKey, GameData, GoalRow, NoteRow, WorthRow } from './types';
 
-export type Rows = { caught: CatchRow[]; goals: GoalRow[]; notes: NoteRow[] };
+export type Rows = { caught: CatchRow[]; goals: GoalRow[]; notes: NoteRow[]; worth: WorthRow[] };
 const STORAGE_KEY = 'shiny-hunting:v2';
 /** Edits saved before the switch to tracker.json, one list per old CSV file. */
 const LEGACY_KEY = 'shiny-hunting:v1';
@@ -71,11 +71,12 @@ function normalizeAll(raw: Partial<Record<FileKey, unknown[]>>, resolve: Resolve
     caught: run('caught', normalizeCatches),
     goals: run('goals', normalizeGoals),
     notes: run('notes', normalizeNotes),
+    worth: run('worth', (r) => normalizeWorth(r)),
   };
   return { rows, issues };
 }
 
-const EMPTY: Rows = { caught: [], goals: [], notes: [] };
+const EMPTY: Rows = { caught: [], goals: [], notes: [], worth: [] };
 
 export interface ImportResult {
   ok: boolean;
@@ -102,6 +103,8 @@ interface Store {
   saveGoal: (row: GoalRow, previousSpecies?: string) => void;
   deleteGoal: (species: string) => void;
   saveNote: (species: string, notes: string) => void;
+  /** Set the manual net-worth amounts (pokeyen, as typed; blank clears). */
+  saveWorth: (values: Partial<Record<string, string>>) => void;
   /** True when this browser refused to save edits (storage full, blocked, private mode). */
   storageFailed: boolean;
   /** `confirmReplace(incoming, current)` is asked before an import replaces your data. */
@@ -120,7 +123,7 @@ async function fetchText(path: string) {
   return res.text();
 }
 
-const countsOf = (r: Rows): Record<FileKey, number> => ({ caught: r.caught.length, goals: r.goals.length, notes: r.notes.length });
+const countsOf = (r: Rows): Record<FileKey, number> => ({ caught: r.caught.length, goals: r.goals.length, notes: r.notes.length, worth: r.worth.length });
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<Store['status']>('loading');
@@ -209,6 +212,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return { goals: out };
     }),
     deleteGoal: (species) => update((cur) => ({ goals: cur.goals.filter((r) => r.species !== species) })),
+    saveWorth: (values) => update((cur) => {
+      const next = new Map(cur.worth.map((w) => [w.item, w.value]));
+      for (const [item, v] of Object.entries(values)) next.set(item, (v ?? '').trim());
+      return { worth: [...next.entries()].map(([item, value]) => ({ item, value })) };
+    }),
     saveNote: (species, notes) => update((cur) => {
       const rest = cur.notes.filter((r) => r.species !== species);
       return { notes: notes.trim() ? [...rest, { species, notes: notes.trim() }] : rest };
