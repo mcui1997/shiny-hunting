@@ -11,7 +11,7 @@
 
 ## What it does
 
-- **Home**: everything you have at a glance: owned shinies, then goals by P1 / P2 / P3, with quick edits
+- **Home**: totals, owned shinies, then goals grouped Current / Future / Unplanned, with quick edits
 - **Dex** of all 649 Gen 1–5 Pokémon in shiny and normal, searchable, with season and solo-horde filters
 - **Species pages** lead with abilities and what each does (PokeMMO's own effects, in and out of battle), then base stats, EV yield, egg groups, gender, catch rate, tier
 - **Uses** worked out from abilities and learnable moves: egg hatcher, Synchronize (20% in PokeMMO), Sweet Scent, False Swipe, sleep and paralysis moves, trapping, encounter-rate abilities
@@ -31,11 +31,9 @@ Everything lives in one file, `public/data/tracker.json`. Each entry sits on its
     {"id":"s001","species":"Aron","current_form":"Aggron","caught_at":"2026-09-23 21:04","encounters":26321,"method":"5x horde","status":"kept","tag":"cosmetic"}
   ],
   "goals": [
-    {"species":"Xatu","priority":"P1","status":"hunting"}
+    {"species":"Xatu","priority":"current"}
   ],
-  "notes": [
-    {"species":"Litwick","notes":"Celestial Tower, summer nights"}
-  ]
+  "notes": []
 }
 ```
 
@@ -57,7 +55,7 @@ Import on the site replaces all three lists; Export downloads the whole file.
 | `tag` | Category for the Owned filter, e.g. `utility`, `cosmetic`, or your own |
 
 Also: `id`, `form`, `evolved_on`, `location`, `season`, `nature`, `ivs`, `ball`, `sold_on`.
-Goals have `species`, `priority` (`P1`–`P3`), `status` (`planned`, `hunting`, `paused`), `notes`.
+Goals have `species` and `priority`: `current`, `future`, or left out for unplanned. Older files with P1–P3 and a hunting status are converted on import.
 
 </details>
 

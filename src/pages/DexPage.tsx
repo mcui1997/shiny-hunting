@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Sprite } from '../components/Sprite';
-import { Totals } from '../components/Totals';
 import { dexNo, formatWhen, SparkleIcon, StatePill } from '../components/ui';
 import { useDerived } from '../lib/derived';
 import { bestSpotLabel, hordeSpots } from '../lib/game';
@@ -50,7 +49,6 @@ export function DexPage() {
 
   return (
     <div className="stack" style={{ gap: 28 }}>
-      <Totals s={d.summary} />
 
       <section aria-label="Dex" className="stack" style={{ gap: 18 }}>
         <div className="toolbar">

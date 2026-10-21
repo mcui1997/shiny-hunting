@@ -1,5 +1,5 @@
 import {
-  CATCH_COLUMNS, CATCH_STATUSES, GOAL_COLUMNS, GOAL_STATUSES, METHODS, NATURES, NOTE_COLUMNS,
+  CATCH_COLUMNS, CATCH_STATUSES, GOAL_COLUMNS, METHODS, NATURES, NOTE_COLUMNS,
   SEASONS, type CatchRow, type CatchStatus, type FileKey, type GoalRow, type NoteRow,
 } from './types';
 
@@ -103,7 +103,7 @@ export function parseTracker(text: string): RawTracker {
       items = items.slice(0, LIMITS.rows);
     }
     items.forEach((raw, i) => {
-      const row = flatEntry(raw, COLUMNS[s], `${SECTION_LABEL[s]} entry ${i + 1}`, issues);
+      const row = flatEntry(raw, READ_COLUMNS[s], `${SECTION_LABEL[s]} entry ${i + 1}`, issues);
       if (row) out[s].push(row);
     });
   }
@@ -343,13 +343,16 @@ export function normalizeGoals(input: Record<string, unknown>[], resolve: Resolv
     if (seen.has(sp)) { issues.push(`Entry ${i + 1}: ${sp} is listed twice; kept the first.`); return; }
     seen.add(sp);
     row.species = sp;
-    row.priority = row.priority.toUpperCase();
-    if (row.priority && !/^P[1-3]$/.test(row.priority)) {
-      issues.push(`Entry ${i + 1}: priority "${row.priority}" should be P1, P2 or P3. Cleared it.`);
+    // Older files used P1–P3 plus a separate "hunting" status: hunting or P1 is current, P2/P3 future.
+    const p = row.priority.toLowerCase();
+    const legacyStatus = Object.prototype.hasOwnProperty.call(raw, 'status') ? String(raw.status).toLowerCase() : '';
+    if (legacyStatus === 'hunting' || p === 'p1') row.priority = 'current';
+    else if (p === 'p2' || p === 'p3') row.priority = 'future';
+    else if (p === 'current' || p === 'future' || p === '') row.priority = p;
+    else {
+      issues.push(`Entry ${i + 1}: priority "${row.priority}" should be current or future. Treated as unplanned.`);
       row.priority = '';
     }
-    row.status = (row.status || 'planned').toLowerCase();
-    if (!(GOAL_STATUSES as readonly string[]).includes(row.status)) row.status = 'planned';
     rows.push(row);
   });
   return { rows, issues };
@@ -375,6 +378,9 @@ export const COLUMNS: Record<FileKey, readonly string[]> = {
   goals: GOAL_COLUMNS,
   notes: NOTE_COLUMNS,
 };
+
+/** Fields read from a file: the current ones plus `status` on goals, kept only to convert old files. */
+const READ_COLUMNS: Record<FileKey, readonly string[]> = { ...COLUMNS, goals: [...GOAL_COLUMNS, 'status'] };
 
 /** Small, stable hash used to notice when the repo copy of tracker.json changed. */
 export function hashText(s: string): string {

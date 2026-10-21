@@ -34,8 +34,8 @@ export function StatePill({ state, goal, progress, goneStatus }: { state: DexSta
   if (state === 'gone' && !goal) return <Pill tone="neutral">{STATUS_LABEL[goneStatus ?? ''] ?? 'Gone'}</Pill>;
   if (goal) {
     if (progress?.kind === 'evolve') return <Pill tone="teal">Evolve to finish</Pill>;
-    const label = [goal.priority, goal.status === 'hunting' ? 'Hunting' : 'Goal'].filter(Boolean).join(' · ');
-    return <Pill tone={goal.status === 'hunting' ? 'ember' : 'teal'}>{label}</Pill>;
+    if (goal.priority === 'current') return <Pill tone="ember">Current</Pill>;
+    return <Pill tone="teal">{goal.priority === 'future' ? 'Future' : 'Goal'}</Pill>;
   }
   if (state === 'line') return <Pill tone="neutral">In your line</Pill>;
   return null;

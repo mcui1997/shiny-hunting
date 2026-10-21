@@ -1,9 +1,8 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment } from 'react';
 import { DexEntry, HuntSummaryPanel } from '../components/DexEntry';
 import { GoalControls } from '../components/GoalControls';
 import { Sprite } from '../components/Sprite';
 import { BackLink, catchStatusPill, dexNo, formatWhen, Pill, SparkleIcon } from '../components/ui';
-import { LIMITS } from '../lib/data';
 import { useDerived } from '../lib/derived';
 import { href } from '../lib/router';
 import { currentSpecies, formatCount, isMineState, isOwned, isOwnedState } from '../lib/stats';
@@ -52,7 +51,6 @@ export function SpeciesPage({ id }: { id: number }) {
         <div className="species-main">
           <DexEntry sp={sp} />
           <HuntSummaryPanel sp={sp} family={family} game={d.game} />
-          <HuntNotes species={sp.name} />
         </div>
       </div>
     </div>
@@ -106,7 +104,7 @@ function Tracking({ sp }: { sp: Species }) {
           ) : (
             <a className="btn btn--small btn--primary" href={href.newCatch(sp.name)}>Log shiny</a>
           )}
-          {!goal && <button type="button" className="btn btn--small" onClick={() => store.saveGoal({ species: sp.name, priority: '', status: 'planned', notes: '' })}>+ Goal</button>}
+          {!goal && <button type="button" className="btn btn--small" onClick={() => store.saveGoal({ species: sp.name, priority: '', notes: '' })}>+ Goal</button>}
           {lineCatch && <a className="btn btn--small btn--ghost" href={href.newCatch(sp.name)}>Log a new one</a>}
         </div>
       )}
@@ -155,23 +153,5 @@ function OtherCatches({ catches }: { catches: CatchRow[] }) {
         ))}
       </div>
     </details>
-  );
-}
-
-function HuntNotes({ species }: { species: string }) {
-  const d = useDerived()!;
-  const store = useStore();
-  const saved = d.notes.get(species) ?? '';
-  const [text, setText] = useState(saved);
-  useEffect(() => setText(saved), [saved, species]);
-  const changed = text.trim() !== saved;
-  return (
-    <section className="field">
-      <label htmlFor="hunt-notes" className="h3" style={{ color: 'var(--ink)' }}>Your hunt notes</label>
-      <textarea id="hunt-notes" className="textarea" rows={3} maxLength={LIMITS.longText}
-        placeholder="Anything the data doesn't know: best spot to Sweet Scent from, your rotation, what to bring, how you'll get an egg-only one."
-        value={text} onChange={(e) => setText(e.target.value)} onBlur={() => changed && store.saveNote(species, text)} />
-      {changed && <div className="row"><button type="button" className="btn btn--small btn--primary" onClick={() => store.saveNote(species, text)}>Save notes</button></div>}
-    </section>
   );
 }
