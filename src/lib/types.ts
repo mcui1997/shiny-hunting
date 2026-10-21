@@ -37,7 +37,8 @@ export interface RareRow {
 }
 
 export interface DexFacts {
-  abilities: { name: string; hidden: boolean }[];
+  /** effect = in battle; field = outside battle (PokeMMO), when it has one */
+  abilities: { name: string; hidden: boolean; effect: string; field?: string }[];
   /** Base stats: HP, Atk, Def, SpA, SpD, Spe */
   stats: [number, number, number, number, number, number];
   /** EVs given when defeated, same order as stats */
@@ -118,7 +119,8 @@ export type CatchRow = Record<CatchColumn, string>;
 
 export const GOAL_COLUMNS = ['species', 'priority', 'status', 'notes'] as const;
 export type GoalRow = Record<(typeof GOAL_COLUMNS)[number], string>;
-export const GOAL_STATUSES = ['planned', 'hunting', 'paused'] as const;
+/** Anything else (including the old "paused") reads as planned. */
+export const GOAL_STATUSES = ['planned', 'hunting'] as const;
 export const PRIORITIES = ['P1', 'P2', 'P3'] as const;
 
 export const NOTE_COLUMNS = ['species', 'notes'] as const;

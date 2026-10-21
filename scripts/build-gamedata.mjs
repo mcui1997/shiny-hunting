@@ -10,6 +10,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ABILITY_EFFECT, ABILITY_RENAME } from './abilities-en.mjs';
 import { RULES, usesFor } from './uses.mjs';
 
 const SOURCE_COMMIT = 'd462e849a7319b52ba6b5f15e368c24e23529dc8';
@@ -83,12 +84,19 @@ const titleWords = (s) => s.replace(/\b[a-z]/g, (c) => c.toUpperCase());
 
 // Ability slots are [first, second, hidden]: the second repeats the first when there's only one,
 // and the hidden slot is "--" when there's none (checked against known hidden abilities in tests).
+export const abilityName = (n) => ABILITY_RENAME[n] ?? n;
+
 function abilitiesOf(m) {
-  const [a, b, h] = m.abilities.map((x) => x.name);
-  const out = [{ name: a, hidden: false }];
-  if (b && b !== a && b !== '--') out.push({ name: b, hidden: false });
-  if (h && h !== '--' && h !== a && h !== b) out.push({ name: h, hidden: true });
-  return out;
+  const [a, b, h] = m.abilities.map((x) => abilityName(x.name));
+  const slots = [[a, false]];
+  if (b && b !== a && b !== '--') slots.push([b, false]);
+  if (h && h !== '--' && h !== a && h !== b) slots.push([h, true]);
+  return slots.map(([name, hidden]) => {
+    const effect = ABILITY_EFFECT[name];
+    if (!effect) throw new Error(`abilities-en.mjs: no effect text for "${name}"`);
+    const field = RULES.ABILITY_USES[name]?.[1];
+    return { name, hidden, effect, ...(field && { field }) };
+  });
 }
 
 function dexFacts(m) {
@@ -207,7 +215,7 @@ function main({ monsters: source, moves: moveList }) {
   });
 
   // Every rule must name a real ability/move, so a typo or a rename in the source fails loudly.
-  const abilityNames = new Set(mons.flatMap((m) => m.abilities.map((a) => a.name)));
+  const abilityNames = new Set(mons.flatMap((m) => m.abilities.map((a) => abilityName(a.name))));
   const moveNames = new Set(moveList.map((mv) => mv.name));
   for (const a of [...Object.keys(RULES.ABILITY_USES), ...Object.keys(RULES.TRAP_ABILITIES)]) {
     if (!abilityNames.has(a)) throw new Error(`uses.mjs: no species has the ability "${a}"`);

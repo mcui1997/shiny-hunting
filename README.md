@@ -11,8 +11,9 @@
 
 ## What it does
 
+- **Home**: everything you have at a glance: owned shinies, then goals by P1 / P2 / P3, with quick edits
 - **Dex** of all 649 Gen 1–5 Pokémon in shiny and normal, searchable, with season and solo-horde filters
-- **Dex entries** for every species: abilities (hidden marked), base stats, EV yield, egg groups, gender, catch rate, tier
+- **Species pages** lead with abilities and what each does (PokeMMO's own effects, in and out of battle), then base stats, EV yield, egg groups, gender, catch rate, tier
 - **Uses** worked out from abilities and learnable moves: egg hatcher, Synchronize (20% in PokeMMO), Sweet Scent, False Swipe, sleep and paralysis moves, trapping, encounter-rate abilities
 - **Hunt summary**: best 5x horde share in each season, for the species and its earlier stages, with a link to the PokeMMO wiki
 - **Your log** of catches with evolutions, categories, and luck against 1 in 27,000 (donator status)

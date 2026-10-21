@@ -28,11 +28,9 @@ export function goalProgress(goal: GoalRow, catches: CatchRow[], game: Game): Go
 }
 
 const PRIORITY_ORDER: Record<string, number> = { P1: 0, P2: 1, P3: 2, '': 3 };
-const STATUS_ORDER: Record<string, number> = { hunting: 0, planned: 1, paused: 2 };
 
 export function sortGoals(goals: GoalRow[]): GoalRow[] {
   return [...goals].sort((a, b) =>
     (PRIORITY_ORDER[a.priority] ?? 3) - (PRIORITY_ORDER[b.priority] ?? 3) ||
-    (STATUS_ORDER[a.status] ?? 1) - (STATUS_ORDER[b.status] ?? 1) ||
     a.species.localeCompare(b.species));
 }

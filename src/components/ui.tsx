@@ -11,9 +11,10 @@ export function SparkleIcon({ size = 18, color = 'var(--sparkle)', className }: 
   );
 }
 
+/** Goes back in history when there is somewhere to go back to, else to `href`. */
 export function BackLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <a className="back" href={href}>
+    <a className="back" href={href} onClick={(e) => { if (window.history.length > 1) { e.preventDefault(); window.history.back(); } }}>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
       {children}
     </a>
@@ -33,8 +34,8 @@ export function StatePill({ state, goal, progress, goneStatus }: { state: DexSta
   if (state === 'gone' && !goal) return <Pill tone="neutral">{STATUS_LABEL[goneStatus ?? ''] ?? 'Gone'}</Pill>;
   if (goal) {
     if (progress?.kind === 'evolve') return <Pill tone="teal">Evolve to finish</Pill>;
-    const label = [goal.priority, goal.status === 'hunting' ? 'Hunting' : goal.status === 'paused' ? 'Paused' : 'Goal'].filter(Boolean).join(' · ');
-    return <Pill tone={goal.status === 'hunting' ? 'ember' : goal.status === 'paused' ? 'neutral' : 'teal'}>{label}</Pill>;
+    const label = [goal.priority, goal.status === 'hunting' ? 'Hunting' : 'Goal'].filter(Boolean).join(' · ');
+    return <Pill tone={goal.status === 'hunting' ? 'ember' : 'teal'}>{label}</Pill>;
   }
   if (state === 'line') return <Pill tone="neutral">In your line</Pill>;
   return null;
