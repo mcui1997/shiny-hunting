@@ -225,11 +225,11 @@ describe('values and net worth', () => {
     expect(bad.issues.join(' ')).toMatch(/value/);
   });
   it('worth round-trips as an object and only keeps known items', () => {
-    const raw = parseTracker('{"caught":[],"worth":{"pokemon":"5m","cosmetics":1200000,"house":9}}');
+    const raw = parseTracker('{"caught":[],"worth":{"pokemon":"5m","cosmetics":1200000,"pokeyen":"850k","house":9}}');
     const w = normalizeWorth(raw.worth);
-    expect(w.rows).toEqual([{ item: 'pokemon', value: '5000000' }, { item: 'cosmetics', value: '1200000' }]);
+    expect(w.rows).toEqual([{ item: 'pokemon', value: '5000000' }, { item: 'cosmetics', value: '1200000' }, { item: 'pokeyen', value: '850000' }]);
     const text = toTrackerJson({ caught: [], goals: [], notes: [], worth: w.rows });
-    expect(JSON.parse(text).worth).toEqual({ pokemon: 5000000, cosmetics: 1200000 });
+    expect(JSON.parse(text).worth).toEqual({ pokemon: 5000000, cosmetics: 1200000, pokeyen: 850000 });
   });
   it('a file without worth still reads, and bad worth is reported', () => {
     expect(parseTracker('{"caught":[]}').worth).toEqual([]);

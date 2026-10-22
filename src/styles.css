@@ -364,6 +364,7 @@ select:hover, .select:hover { color: var(--ink); border-color: var(--moss); }
 .prio-label { margin: 0; font: 700 15px var(--display); color: var(--ink); }
 .add-goal { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .input--compact { min-height: 36px; padding: 6px 12px; font-size: 14px; width: 180px; }
+.combo .input--compact { width: 100%; }
 .add-goal .input, .add-goal .select, .add-goal .btn, .goal-controls .select, .goal-controls .btn { height: 36px; min-height: 36px; box-sizing: border-box; }
 @media (max-width: 560px) {
   .mini-grid { grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 8px; }
@@ -392,3 +393,19 @@ select:hover, .select:hover { color: var(--ink); border-color: var(--moss); }
 .worth-line { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 14px; }
 .worth-line .mono { font-weight: 600; }
 @media (max-width: 900px) { .stats-top { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- suggestion dropdown (Combobox) ---------- */
+.combo { position: relative; width: 100%; }
+.combo--compact { width: 180px; }
+.combo-list { position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; right: 0; min-width: 200px; margin: 0; padding: 4px; list-style: none;
+  background: var(--paper); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: 0 10px 30px rgba(22, 32, 29, .14); max-height: 280px; overflow-y: auto; }
+.combo-option { padding: 8px 10px; border-radius: 7px; color: var(--ink); background: var(--paper); font-size: 14px; cursor: pointer; }
+.combo-option[aria-selected='true'] { background: var(--lagoon-soft); color: var(--lagoon-deep); }
+@media (max-width: 560px) { .combo--compact { flex: 1; width: auto; } }
+
+/* Browser autofill restyles fields (pale fill, sometimes light text). Keep our colors. */
+input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:autofill {
+  -webkit-text-fill-color: var(--ink); caret-color: var(--ink);
+  box-shadow: 0 0 0 1000px var(--paper) inset; transition: background-color 9999s ease-out 0s;
+}
+.input, .textarea { color: var(--ink); }

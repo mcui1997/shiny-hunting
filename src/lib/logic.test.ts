@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { makeResolver, normalizeCatches, normalizeGoals, normalizeNotes, parseTracker, toTrackerJson } from './data';
+import { makeResolver, normalizeCatches, normalizeGoals, normalizeNotes, normalizeWorth, parseTracker, toTrackerJson } from './data';
 import { Game, hordeSpots, huntSummary, shareIn } from './game';
 import { goalProgress } from './goals';
 import { chanceWithin, DexIndex, poissonAtLeast, summarize } from './stats';
@@ -27,7 +27,8 @@ describe('repo data', () => {
   });
 
   it('tracker.json is exactly what the site would export', () => {
-    expect(toTrackerJson({ caught: repoCaught.rows, goals: repoGoals.rows, notes: repoNotes.rows })).toBe(trackerText);
+    const worth = normalizeWorth(repoRaw.worth).rows;
+    expect(toTrackerJson({ caught: repoCaught.rows, goals: repoGoals.rows, notes: repoNotes.rows, worth })).toBe(trackerText);
   });
 
   it('matches the totals from the original sheet (its 9 catches)', () => {

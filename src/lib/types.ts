@@ -127,8 +127,8 @@ export const NOTE_COLUMNS = ['species', 'notes'] as const;
 export type NoteRow = Record<(typeof NOTE_COLUMNS)[number], string>;
 
 /** Manual parts of net worth (in pokeyen). Shiny value comes from each kept catch's `value`. */
-export const WORTH_ITEMS = ['pokemon', 'cosmetics'] as const;
-export const WORTH_LABEL: Record<string, string> = { pokemon: 'Non-shiny Pokémon', cosmetics: 'Cosmetics' };
+export const WORTH_ITEMS = ['pokemon', 'cosmetics', 'pokeyen'] as const;
+export const WORTH_LABEL: Record<string, string> = { pokemon: 'Non-shiny Pokémon', cosmetics: 'Cosmetics', pokeyen: 'Pokeyen' };
 export const WORTH_COLUMNS = ['item', 'value'] as const;
 export type WorthRow = Record<(typeof WORTH_COLUMNS)[number], string>;
 

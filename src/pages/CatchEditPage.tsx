@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react';
+import { Combobox } from '../components/Combobox';
 import { Sprite } from '../components/Sprite';
 import { BackLink } from '../components/ui';
 import { LIMITS, makeResolver, normalizeTag, parseCount, parseDateTime, parseValue } from '../lib/data';
@@ -102,7 +103,7 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
         <div className="form-grid">
           <div className="field">
             <label htmlFor="f-species">Pokémon (as caught)</label>
-            <input id="f-species" maxLength={LIMITS.shortText} className="input" list="species-names" value={row.species} onChange={set('species')} required {...inv('species')} />
+            <Combobox id="f-species" maxLength={LIMITS.shortText} value={row.species} onValue={(v) => set('species')({ target: { value: v } })} options={d.game.names} required {...inv('species')} />
             {err('species')}
           </div>
           <div className="field">
@@ -124,8 +125,7 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
           </div>
           <div className="field">
             <label htmlFor="f-loc">Location</label>
-            <input id="f-loc" maxLength={LIMITS.shortText} className="input" list="area-names" value={row.location} onChange={set('location')} />
-            <datalist id="area-names">{areas.map((a) => <option key={a} value={a} />)}</datalist>
+            <Combobox id="f-loc" maxLength={LIMITS.shortText} value={row.location} onValue={(v) => set('location')({ target: { value: v } })} options={areas} />
           </div>
           <div className="field">
             <label htmlFor="f-season">Season</label>
@@ -237,7 +237,6 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
           </div>
         </div>
       </form>
-      <datalist id="species-names">{d.game.names.map((n) => <option key={n} value={n} />)}</datalist>
     </div>
   );
 }
