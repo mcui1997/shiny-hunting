@@ -1,16 +1,16 @@
 {
   "version": 1,
   "caught": [
-    {"id":"s001","species":"Aron","current_form":"Aggron","caught_at":"2026-09-23 21:04","encounters":26321,"method":"5x horde","location":"Mistralton Cave (2F)","season":"Spring","nature":"Adamant","status":"kept","tag":"cosmetic"},
+    {"id":"s001","species":"Aron","current_form":"Aggron","caught_at":"2026-09-23 21:04","encounters":26321,"method":"5x horde","location":"Mistralton Cave (2F)","season":"Spring","nature":"Adamant","status":"kept","tag":"cosmetic","value":2500000},
     {"id":"s002","species":"Heatmor","caught_at":"2026-09-30 22:59","encounters":36178,"method":"5x horde","location":"Victory Road (Outside)","season":"Summer","status":"sold"},
-    {"id":"s003","species":"Krokorok","current_form":"Krookodile","caught_at":"2026-10-02 09:33","encounters":5717,"method":"5x horde","location":"Relic Castle (B2F)","nature":"Impish","status":"kept","tag":"utility"},
-    {"id":"s004","species":"Haunter","current_form":"Gengar","caught_at":"2026-10-05 18:39","encounters":17852,"method":"5x horde","location":"Bell Tower (8F)","season":"Spring","nature":"Bold","status":"kept","tag":"cosmetic"},
-    {"id":"s005","species":"Torkoal","caught_at":"2026-10-09 10:16","encounters":21201,"method":"5x horde","location":"Magma Hideout","season":"Summer","status":"kept","tag":"utility"},
-    {"id":"s006","species":"Litwick","current_form":"Chandelure","caught_at":"2026-10-14 04:37","encounters":27825,"method":"5x horde","location":"Celestial Tower","season":"Summer","nature":"Modest","status":"kept","tag":"utility"},
-    {"id":"s007","species":"Magikarp","current_form":"Gyarados","caught_at":"2026-10-16 17:00","encounters":20470,"method":"5x horde","location":"Dragon's Den","season":"Summer","nature":"Jolly","status":"kept","tag":"cosmetic"},
-    {"id":"s008","species":"Smeargle","caught_at":"2026-10-17 16:17","encounters":7671,"method":"5x horde","location":"Artisan Cave (1F)","season":"Summer","status":"kept","tag":"utility"},
-    {"id":"s009","species":"Nidorino","current_form":"Nidoking","caught_at":"2026-10-17 19:14","encounters":1397,"method":"5x horde","season":"Summer","nature":"Lonely","status":"kept","tag":"cosmetic"},
-    {"id":"s010","species":"Natu","caught_at":"2026-10-20 23:16","encounters":24235,"method":"5x horde","location":"Ruins of Alph (Outside)","season":"Summer","status":"kept","tag":"utility"}
+    {"id":"s003","species":"Krokorok","current_form":"Krookodile","caught_at":"2026-10-02 09:33","encounters":5717,"method":"5x horde","location":"Relic Castle (B2F)","nature":"Impish","status":"kept","tag":"utility","value":2000000},
+    {"id":"s004","species":"Haunter","current_form":"Gengar","caught_at":"2026-10-05 18:39","encounters":17852,"method":"5x horde","location":"Bell Tower (8F)","season":"Spring","nature":"Bold","status":"kept","tag":"cosmetic","value":2300000},
+    {"id":"s005","species":"Torkoal","caught_at":"2026-10-09 10:16","encounters":21201,"method":"5x horde","location":"Magma Hideout","season":"Summer","status":"kept","tag":"utility","value":2500000},
+    {"id":"s006","species":"Litwick","current_form":"Chandelure","caught_at":"2026-10-14 04:37","encounters":27825,"method":"5x horde","location":"Celestial Tower","season":"Summer","nature":"Modest","status":"kept","tag":"utility","value":3600000},
+    {"id":"s007","species":"Magikarp","current_form":"Gyarados","caught_at":"2026-10-16 17:00","encounters":20470,"method":"5x horde","location":"Dragon's Den","season":"Summer","nature":"Jolly","status":"kept","tag":"cosmetic","value":3600000},
+    {"id":"s008","species":"Smeargle","caught_at":"2026-10-17 16:17","encounters":7671,"method":"5x horde","location":"Artisan Cave (1F)","season":"Summer","status":"kept","tag":"utility","value":2000000},
+    {"id":"s009","species":"Nidorino","current_form":"Nidoking","caught_at":"2026-10-17 19:14","encounters":1397,"method":"5x horde","season":"Summer","nature":"Lonely","status":"kept","tag":"cosmetic","value":2000000},
+    {"id":"s010","species":"Natu","caught_at":"2026-10-20 23:16","encounters":24235,"method":"5x horde","location":"Ruins of Alph (Outside)","season":"Summer","status":"kept","tag":"utility","value":4000000}
   ],
   "goals": [
     {"species":"Aerodactyl"},
@@ -30,7 +30,7 @@
     {"species":"Gallade"},
     {"species":"Gigalith","priority":"future"},
     {"species":"Gliscor"},
-    {"species":"Golurk","priority":"future"},
+    {"species":"Golurk","priority":"current"},
     {"species":"Haxorus","priority":"future"},
     {"species":"Heatran"},
     {"species":"Heracross","priority":"future"},
@@ -59,7 +59,7 @@
     {"species":"Weezing","priority":"current"},
     {"species":"Zoroark"},
     {"species":"Natu","priority":"current"},
-    {"species":"Kadabra","priority":"current"},
+    {"species":"Kadabra","priority":"future"},
     {"species":"Rapidash"},
     {"species":"Ditto"},
     {"species":"Ariados"},
@@ -69,9 +69,22 @@
     {"species":"Houndoom"},
     {"species":"Absol"},
     {"species":"Altaria"},
-    {"species":"Paras","priority":"current"},
-    {"species":"Spinda","priority":"current"}
+    {"species":"Spinda","priority":"current"},
+    {"species":"Cinccino"},
+    {"species":"Drifblim"},
+    {"species":"Empoleon"},
+    {"species":"Sharpedo"},
+    {"species":"Delcatty"},
+    {"species":"Pinsir"},
+    {"species":"Parasect","priority":"current"},
+    {"species":"Accelgor"},
+    {"species":"Lickilicky"},
+    {"species":"Pelipper"},
+    {"species":"Tyranitar","priority":"future"},
+    {"species":"Skarmory"},
+    {"species":"Scizor","priority":"future"},
+    {"species":"Azumarill"}
   ],
   "notes": [],
-  "worth": {}
+  "worth": {"pokemon":2500000, "cosmetics":2700000}
 }

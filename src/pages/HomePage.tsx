@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Combobox } from '../components/Combobox';
 import { GoalMenu, MiniTile } from '../components/MiniTile';
 import { Totals } from '../components/Totals';
 import { Pill, STATUS_LABEL } from '../components/ui';
@@ -114,9 +115,9 @@ function AddGoal() {
   return (
     <form className="add-goal" onSubmit={(e) => { e.preventDefault(); add(); }}>
       <label className="sr-only" htmlFor="add-goal">Add a goal</label>
-      <input id="add-goal" className="input input--compact" list="species-names" maxLength={40} placeholder="Add a goal…" value={text}
-        aria-invalid={error ? true : undefined} aria-describedby={error ? 'add-goal-error' : undefined}
-        onChange={(e) => { setText(e.target.value); setError(null); }} />
+      <Combobox id="add-goal" className="input input--compact" wrapClassName="combo--compact" maxLength={40} placeholder="Add a goal…" value={text}
+        options={d.game.names} onValue={(v) => { setText(v); setError(null); }}
+        aria-invalid={error ? true : undefined} aria-describedby={error ? 'add-goal-error' : undefined} />
       <label className="sr-only" htmlFor="add-goal-p">Priority</label>
       <select id="add-goal-p" className="select select--compact" value={priority} onChange={(e) => setPriority(e.target.value)}>
         {PRIORITIES.map((p) => <option key={p} value={p}>{PRIORITY_LABEL[p]}</option>)}
@@ -124,7 +125,6 @@ function AddGoal() {
       </select>
       <button type="submit" className="btn btn--small btn--primary">Add</button>
       {error && <span id="add-goal-error" className="small" role="alert" style={{ color: 'var(--ember-ink)', flexBasis: '100%' }}>{error}</span>}
-      <datalist id="species-names">{d.game.names.map((n) => <option key={n} value={n} />)}</datalist>
     </form>
   );
 }
