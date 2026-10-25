@@ -2,11 +2,12 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { Combobox } from '../components/Combobox';
 import { Sprite } from '../components/Sprite';
 import { BackLink } from '../components/ui';
-import { LIMITS, makeResolver, normalizeTag, parseCount, parseDateTime, parseValue } from '../lib/data';
+import { LIMITS, makeResolver, parseCount, parseDateTime, parseValue } from '../lib/data';
 import { useDerived } from '../lib/derived';
+import { suggestedNote } from '../lib/notes';
 import { go, href } from '../lib/router';
 import { useStore } from '../lib/store';
-import { CATCH_COLUMNS, CATCH_STATUSES, DEFAULT_ODDS, DEFAULT_TAGS, METHODS, NATURES, ODDS_LABEL, SEASONS, type CatchRow } from '../lib/types';
+import { CATCH_COLUMNS, CATCH_STATUSES, DEFAULT_ODDS, METHODS, NATURES, ODDS_LABEL, SEASONS, type CatchRow } from '../lib/types';
 
 const blank = (): CatchRow => Object.fromEntries(CATCH_COLUMNS.map((c) => [c, ''])) as CatchRow;
 const nowLocal = () => {
@@ -15,7 +16,6 @@ const nowLocal = () => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 };
 
-const NEW_TAG = '__new__';
 
 export function CatchEditPage({ id, species }: { id?: string; species?: string }) {
   const d = useDerived()!;
@@ -38,8 +38,6 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
   }
 
   const sp = d.game.byName.get(resolve(row.species) ?? '');
-  const tagOptions = [...new Set([...DEFAULT_TAGS, ...store.rows.caught.map((c) => c.tag), row.tag].filter(Boolean))].sort();
-  const [customTag, setCustomTag] = useState(false);
   const evolveOptions = sp ? d.game.descendants(sp.id) : [];
   const areas = sp ? [...new Set(d.game.family(sp.id).flatMap((f) => [...f.hordes, ...f.singles].map((r) => r.area)))].sort() : [];
   const set = (k: keyof CatchRow) => (e: { target: { value: string } }) => {
@@ -65,7 +63,6 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
     for (const k of ['evolved_on', 'sold_on'] as const) {
       if (row[k] && !parseDateTime(row[k])) er[k] = 'Use a date like 2026-10-20.';
     }
-    out.tag = normalizeTag(row.tag);
     if (out.current_form === out.species) out.current_form = '';
     if (!out.current_form) out.evolved_on = '';
     setErrors(er);
@@ -143,26 +140,6 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
               {CATCH_STATUSES.map((s) => <option key={s} value={s}>{s[0].toUpperCase() + s.slice(1)}</option>)}
             </select>
           </div>
-          <div className="field">
-            <label htmlFor="f-tag">Category</label>
-            {customTag ? (
-              <div className="row" style={{ gap: 8, flexWrap: 'nowrap' }}>
-                <input id="f-tag" maxLength={24} className="input" placeholder="e.g. competitive" value={row.tag} onChange={set('tag')} autoFocus />
-                <button type="button" className="btn btn--small" onClick={() => { setCustomTag(false); setRow((r) => ({ ...r, tag: '' })); }}>Cancel</button>
-              </div>
-            ) : (
-              <select id="f-tag" className="select" value={row.tag}
-                onChange={(e) => {
-                  if (e.target.value === NEW_TAG) { setCustomTag(true); setRow((r) => ({ ...r, tag: '' })); }
-                  else set('tag')(e);
-                }}>
-                <option value="">No category</option>
-                {tagOptions.map((t) => <option key={t} value={t}>{t[0].toUpperCase() + t.slice(1)}</option>)}
-                <option value={NEW_TAG}>New category…</option>
-              </select>
-            )}
-            <span className="field-hint">Groups your Owned list.</span>
-          </div>
           {row.status === 'sold' && (
             <>
               <div className="field">
@@ -202,6 +179,12 @@ export function CatchEditPage({ id, species }: { id?: string; species?: string }
             <input id="f-odds" maxLength={LIMITS.shortText} className="input mono" inputMode="numeric" placeholder={String(DEFAULT_ODDS)} value={row.odds} onChange={set('odds')} {...inv('odds')} />
             <span className="field-hint">Leave blank for {ODDS_LABEL}.</span>
             {err('odds')}
+          </div>
+          <div className="field" style={{ gridColumn: '1 / -1' }}>
+            <label htmlFor="f-note">Good for</label>
+            <textarea id="f-note" className="textarea" rows={2} maxLength={LIMITS.longText} value={row.note} onChange={set('note')}
+              placeholder={suggestedNote(d.game.byName.get(row.current_form || resolve(row.species) || ''))} />
+            <span className="field-hint">Leave blank to use the suggestion shown.</span>
           </div>
         </div>
 

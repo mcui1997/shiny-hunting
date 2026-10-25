@@ -48,7 +48,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
           <span className="brand-mark"><SparkleIcon size={22} /></span>
           <span>
             <span className="brand-name">Shiny Hunting</span>
-            <span className="brand-sub">PokeMMO · personal log</span>
+            <span className="brand-sub">PokeMMO Shiny Log</span>
           </span>
         </a>
         <nav className="nav" aria-label="Main">

@@ -42,14 +42,18 @@ export function formatWhen(s: string): { date: string; time: string | null } {
   return { date, time };
 }
 
-/** Tiny badge for how you'd get it: 5x / 3x horde, egg, or other. */
+/** Tiny badge for how you'd get it: 5x / 3x horde (that many slashes), fishing, egg, or other. */
 export function HuntBadge({ kind }: { kind: HuntKind }) {
   const label = HUNT_KIND_LABEL[kind];
   return (
-    <span className={`hunt-badge hunt-badge--${kind}`} title={label} aria-label={label}>
-      {kind === 'egg' ? (
-        <svg width="9" height="11" viewBox="0 0 18 22" aria-hidden="true"><path d="M9 1C4.5 1 1 8.2 1 13.2 1 18 4.6 21 9 21s8-3 8-7.8C17 8.2 13.5 1 9 1z" fill="currentColor" /></svg>
-      ) : kind === 'other' ? '?' : kind}
+    <span className={`hunt-badge hunt-badge--${kind}`} title={label} role="img" aria-label={label}>
+      <svg width={kind === '5x' ? 18 : 14} height="12" viewBox={kind === '5x' ? '-1 0 16 12' : '0 0 14 12'} aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        {kind === '5x' && [1.5, 4, 6.5, 9, 11.5].map((x) => <path key={x} d={`M${x - 1} 10.5 L${x + 1.2} 1.5`} />)}
+        {kind === '3x' && [3.5, 7, 10.5].map((x) => <path key={x} d={`M${x - 1.2} 10.5 L${x + 1.2} 1.5`} />)}
+        {kind === 'fishing' && <path d="M8.5 1v6.2a2.8 2.8 0 0 1-5.6 0V6.2M2.9 6.2l-1.2 1.4" />}
+        {kind === 'egg' && <path d="M7 1C4.5 1 2.6 5 2.6 7.6 2.6 10 4.6 11.3 7 11.3s4.4-1.3 4.4-3.7C11.4 5 9.5 1 7 1z" fill="currentColor" stroke="none" />}
+        {kind === 'other' && <><path d="M4.8 4.2a2.2 2.2 0 1 1 3.3 1.9c-.7.4-1.1.9-1.1 1.6v.4" /><circle cx="7" cy="10.4" r=".9" fill="currentColor" stroke="none" /></>}
+      </svg>
     </span>
   );
 }

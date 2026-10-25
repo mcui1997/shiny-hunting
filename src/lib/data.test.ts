@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  formatValue, ImportError, makeResolver, normalizeWorth, parseValue, normalizeCatches, normalizeGoals, normalizeNotes, normalizeTag, parseCount, parseDateTime,
+  formatValue, ImportError, makeResolver, normalizeWorth, parseValue, normalizeCatches, normalizeGoals, normalizeNotes, parseCount, parseDateTime,
   parseTracker, toTrackerJson,
 } from './data';
 import { CATCH_COLUMNS, type CatchRow } from './types';
@@ -197,20 +197,26 @@ describe('normalizeGoals', () => {
   });
 });
 
-describe('tags', () => {
-  it('normalizes and keeps tags', () => {
+describe('screenshots, notes and old tags', () => {
+  it('keeps plain screenshot file names and clears anything else', () => {
     const r = normalizeCatches([
-      { species: 'Aron', caught_at: '2026-09-23', tag: ' Utility ' },
-      { species: 'Aron', caught_at: '2026-09-24', tag: 'Cosmetic!!' },
-      { species: 'Aron', caught_at: '2026-09-25', tag: '' },
+      { species: 'Aron', caught_at: '2026-09-23', screenshot: 's001-aron.webp' },
+      { species: 'Aron', caught_at: '2026-09-24', screenshot: '../../etc/passwd' },
+      { species: 'Aron', caught_at: '2026-09-25', screenshot: 'https://evil.example/x.png' },
+      { species: 'Aron', caught_at: '2026-09-26', screenshot: 'Shot One.PNG' },
     ], resolve);
-    expect(r.rows.map((x) => x.tag)).toEqual(['utility', 'cosmetic', '']);
-    expect(r.issues).toHaveLength(1);
+    expect(r.rows.map((x) => x.screenshot)).toEqual(['s001-aron.webp', '', '', '']);
+    expect(r.issues).toHaveLength(3);
   });
-  it('caps tag length', () => expect(normalizeTag('x'.repeat(50))).toHaveLength(24));
-  it('an entry without a tag still imports', () => {
-    const r = normalizeCatches(parseTracker('{"caught":[{"species":"Aron","caught_at":"2026-09-23"}]}').caught, resolve);
-    expect(r.rows[0].tag).toBe('');
+  it('keeps a multi-line note', () => {
+    const r = normalizeCatches([{ species: 'Aron', caught_at: '2026-09-23', note: 'Sturdy lead\nfor False Swipe' }], resolve);
+    expect(r.rows[0].note).toBe('Sturdy lead\nfor False Swipe');
+  });
+  it('old files with tags still import; the tag is dropped', () => {
+    const raw = parseTracker('{"caught":[{"species":"Aron","caught_at":"2026-09-23","tag":"utility"}]}');
+    const r = normalizeCatches(raw.caught, resolve);
+    expect(r.issues).toEqual([]);
+    expect('tag' in r.rows[0]).toBe(false);
   });
 });
 
