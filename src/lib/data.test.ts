@@ -68,7 +68,7 @@ describe('tracker.json round trip', () => {
   it('reading then writing the same data gives identical text', () => {
     const text = toTrackerJson({
       caught: [full({ id: 's001', species: 'Aron', current_form: 'Aggron', caught_at: '2026-09-23 21:04', encounters: '26321', status: 'kept', tag: 'cosmetic' })],
-      goals: [{ species: 'Chandelure', priority: 'current', notes: '' }],
+      goals: [{ species: 'Chandelure', priority: 'hunting', notes: '' }],
       notes: [],
     });
     const raw = parseTracker(text);
@@ -151,17 +151,29 @@ describe('normalizeCatches', () => {
 });
 
 describe('normalizeGoals', () => {
-  it('dedupes and validates the group', () => {
+  it('dedupes and validates the tier', () => {
     const { rows, issues } = normalizeGoals([
-      { species: 'chandelure', priority: 'Current' },
-      { species: 'Chandelure', priority: 'future' },
+      { species: 'chandelure', priority: 'S' },
+      { species: 'Chandelure', priority: 'a' },
       { species: 'Aron', priority: 'someday' },
+      { species: 'Litwick', priority: 'A tier' },
+      { species: 'Heatmor' },
     ], resolve);
     expect(rows).toEqual([
-      { species: 'Chandelure', priority: 'current', notes: '' },
-      { species: 'Aron', priority: '', notes: '' },
+      { species: 'Chandelure', priority: 's', notes: '' },
+      { species: 'Aron', priority: 'b', notes: '' },
+      { species: 'Litwick', priority: 'a', notes: '' },
+      { species: 'Heatmor', priority: 'b', notes: '' },
     ]);
     expect(issues).toHaveLength(2);
+  });
+
+  it('converts current / future / unplanned to tiers', () => {
+    const { rows, issues } = normalizeGoals([
+      { species: 'Aron', priority: 'current' }, { species: 'Litwick', priority: 'future' }, { species: 'Heatmor', priority: '' },
+    ], resolve);
+    expect(issues).toEqual([]);
+    expect(rows.map((r) => r.priority)).toEqual(['hunting', 's', 'b']);
   });
 
   it('converts old P1–P3 and hunting goals', () => {
@@ -174,14 +186,14 @@ describe('normalizeGoals', () => {
     ], resolve);
     expect(issues).toEqual([]);
     expect(rows.map((r) => [r.species, r.priority])).toEqual([
-      ['Aron', 'current'], ['Litwick', 'current'], ['Heatmor', 'current'], ['Chandelure', 'future'], ['Mr. Mime', ''],
+      ['Aron', 'hunting'], ['Litwick', 'hunting'], ['Heatmor', 'hunting'], ['Chandelure', 's'], ['Mr. Mime', 'b'],
     ]);
     expect(rows.every((r) => !('status' in r))).toBe(true);
   });
 
   it('an old tracker.json with goal status still reads', () => {
     const raw = parseTracker('{"goals":[{"species":"Aron","priority":"P1","status":"hunting"}]}');
-    expect(normalizeGoals(raw.goals, resolve).rows[0]).toEqual({ species: 'Aron', priority: 'current', notes: '' });
+    expect(normalizeGoals(raw.goals, resolve).rows[0]).toEqual({ species: 'Aron', priority: 'hunting', notes: '' });
   });
 });
 

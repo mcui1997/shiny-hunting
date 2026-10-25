@@ -19,6 +19,8 @@
   --tile: #EEF3F0;
   --neutral-soft: #EEF0EF;
   --neutral-ink: #3F4A45;
+  --good: #2F9E62;   /* under the odds */
+  --over: #E8892B;   /* over the odds */
   --on-ink-muted: #C9D6CF;
 
   --display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
@@ -185,8 +187,8 @@ details > summary { cursor: pointer; font-weight: 700; min-height: 40px; display
 .bars { display: flex; flex-direction: column; gap: 8px; }
 .bar-row { display: grid; grid-template-columns: 120px minmax(0, 1fr) 80px; gap: 12px; align-items: center; font-size: 14px; }
 .bar-track { height: 14px; border-radius: 999px; background: var(--neutral-soft); position: relative; overflow: hidden; }
-.bar-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--lagoon); }
-.bar-fill--lucky { background: var(--sparkle); }
+.bar-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--over); }
+.bar-fill--lucky { background: var(--good); }
 .bar-mark { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); }
 @media (max-width: 520px) { .bar-row { grid-template-columns: 84px minmax(0, 1fr) 64px; gap: 8px; } }
 .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--moss); }
@@ -385,8 +387,7 @@ select:hover, .select:hover { color: var(--ink); border-color: var(--moss); }
 .select--compact { padding-right: 30px; background-position: right 10px center; }
 
 /* ---------- net worth ---------- */
-.stats-top { display: grid; grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr); gap: 16px; align-items: stretch; }
-.stats-top .tiles { margin: 0; }
+.stats-top { display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(260px, 1fr); gap: 16px; align-items: stretch; }
 .worth { gap: 12px; position: relative; }
 .worth-edit { position: static; flex: none; }
 .worth-lines { display: flex; flex-direction: column; gap: 6px; }
@@ -409,3 +410,49 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
   box-shadow: 0 0 0 1000px var(--paper) inset; transition: background-color 9999s ease-out 0s;
 }
 .input, .textarea { color: var(--ink); }
+
+/* ---------- tier list (Home) ---------- */
+.tiers { display: flex; flex-direction: column; gap: 10px; }
+.tier { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; align-items: stretch; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 10px; }
+.tier-label { border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px; padding: 22px 6px 10px; text-align: center; }
+.tier-name { font: 800 22px/1.05 var(--display); letter-spacing: -0.01em; }
+.tier-count { font: 600 12px var(--mono); opacity: .75; }
+.tier--owned .tier-label { background: var(--gilt); color: var(--gold-ink); }
+.tier--owned .tier-name { font-size: 17px; }
+.tier--hunting .tier-label { background: var(--ember-soft); color: var(--ember-ink); }
+.tier--hunting .tier-name { font-size: 17px; }
+.tier--s .tier-label { background: #FADCD3; color: #8F2D17; }
+.tier--a .tier-label { background: #FCE8CC; color: #7F4A06; }
+.tier--b .tier-label { background: #E7F0DC; color: #3D5A1E; }
+.tier-name { font-size: 28px; }
+.tier-items { align-content: start; }
+.tier-empty { grid-column: 1 / -1; align-self: center; color: var(--moss); font-size: 14px; padding: 12px 4px; }
+@media (max-width: 560px) {
+  .tier { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 8px; }
+  .tier-label { flex-direction: row; justify-content: space-between; padding: 6px 12px; }
+  .tier-name, .tier--owned .tier-name, .tier--hunting .tier-name { font-size: 16px; }
+}
+
+/* ---------- hunt badge (5x / 3x / egg / other) ---------- */
+.hunt-badge { display: inline-grid; place-items: center; min-width: 20px; height: 16px; padding: 0 4px; border-radius: 5px; font: 700 10px/1 var(--mono); letter-spacing: -0.02em; background: var(--paper); border: 1px solid var(--line); color: var(--moss); }
+.mini-art .hunt-badge { position: absolute; right: 3px; bottom: 3px; }
+.hunt-badge--5x { background: var(--lagoon); border-color: var(--lagoon); color: #fff; }
+.hunt-badge--3x { background: var(--lagoon-soft); border-color: #BFE0DA; color: var(--lagoon-deep); }
+.hunt-badge--egg { color: #A97A2C; }
+.hunt-badge--other { color: var(--moss); }
+.segmented--small { padding: 3px; gap: 2px; border-radius: 10px; }
+.segmented--small button { min-height: 30px; padding: 0 10px; font-size: 13px; border-radius: 8px; }
+
+/* ---------- stats overview ---------- */
+.overview { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px 32px; align-items: start; }
+.overview-hero { display: flex; flex-direction: column; gap: 6px; }
+.overview-big { font: 800 56px/1 var(--display); letter-spacing: -0.02em; color: var(--lagoon-deep); }
+.overview-text { margin: 4px 0 0; font-size: 15px; line-height: 1.45; }
+.overview-list { margin: 0; display: flex; flex-direction: column; }
+.overview-list > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 8px 0; border-top: 1px solid #EDF1EE; }
+.overview-list > div:first-child { border-top: 0; padding-top: 2px; }
+.overview-list dt { font-size: 13px; color: var(--moss); }
+.overview-list dd { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.overview-list dd .mono { font-weight: 700; font-size: 16px; }
+.overview-note { grid-column: 1 / -1; }
+@media (max-width: 720px) { .overview { grid-template-columns: minmax(0, 1fr); } .overview-big { font-size: 44px; } }

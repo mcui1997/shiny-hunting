@@ -1,3 +1,4 @@
+import { HUNT_KIND_LABEL, type HuntKind } from '../lib/game';
 import type { ReactNode } from 'react';
 
 export function SparkleIcon({ size = 18, color = 'var(--sparkle)', className }: { size?: number; color?: string; className?: string }) {
@@ -39,4 +40,16 @@ export function formatWhen(s: string): { date: string; time: string | null } {
   const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const time = m[4] ? d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : null;
   return { date, time };
+}
+
+/** Tiny badge for how you'd get it: 5x / 3x horde, egg, or other. */
+export function HuntBadge({ kind }: { kind: HuntKind }) {
+  const label = HUNT_KIND_LABEL[kind];
+  return (
+    <span className={`hunt-badge hunt-badge--${kind}`} title={label} aria-label={label}>
+      {kind === 'egg' ? (
+        <svg width="9" height="11" viewBox="0 0 18 22" aria-hidden="true"><path d="M9 1C4.5 1 1 8.2 1 13.2 1 18 4.6 21 9 21s8-3 8-7.8C17 8.2 13.5 1 9 1z" fill="currentColor" /></svg>
+      ) : kind === 'other' ? '?' : kind}
+    </span>
+  );
 }

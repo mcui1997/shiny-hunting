@@ -154,6 +154,23 @@ describe('dex facts', () => {
   });
 });
 
+describe('hunt badge', () => {
+  const kind = (n: string) => game.huntKind(game.byName.get(n)!);
+  it('5x when it or an earlier stage is in a 5x horde', () => {
+    expect(kind('Litwick')).toBe('5x');
+    expect(kind('Chandelure')).toBe('5x');
+    expect(kind('Aggron')).toBe('5x');
+  });
+  it('egg when there is no horde but the line can breed; other for legendaries', () => {
+    expect(kind('Larvesta')).toBe('egg');
+    expect(kind('Treecko')).toBe('egg');
+    expect(kind('Mewtwo')).toBe('other');
+  });
+  it('every species gets one of the four', () => {
+    for (const p of game.list) expect(['5x', '3x', 'egg', 'other']).toContain(game.huntKind(p));
+  });
+});
+
 describe('ability text', () => {
   it('every ability has an effect, field effects where PokeMMO has one', () => {
     for (const p of game.list) for (const a of p.dex.abilities) expect(a.effect.length).toBeGreaterThan(5);
@@ -229,7 +246,7 @@ describe('evolutions and goals', () => {
   const familyOf = (n: string) => game.byName.get(n)?.family;
 
   it('an unevolved Litwick leaves the Chandelure goal at "evolve to finish"', () => {
-    const p = goalProgress({ species: 'Chandelure', priority: 'P1', notes: '' }, [litwick], game);
+    const p = goalProgress({ species: 'Chandelure', priority: 'hunting', notes: '' }, [litwick], game);
     expect(p.kind).toBe('evolve');
     if (p.kind === 'evolve') expect(p.steps.map((s) => game.name(s.id))).toEqual(['Lampent', 'Chandelure']);
   });
@@ -239,7 +256,7 @@ describe('evolutions and goals', () => {
 
   it('evolving completes the goal and marks every stage it passed through', () => {
     const evolved = { ...litwick, current_form: 'Chandelure' };
-    expect(goalProgress({ species: 'Chandelure', priority: '', notes: '' }, [evolved], game).kind).toBe('done');
+    expect(goalProgress({ species: 'Chandelure', priority: 'b', notes: '' }, [evolved], game).kind).toBe('done');
     const dex = new DexIndex([evolved], familyOf, stagesBetween);
     expect(dex.get('Chandelure').state).toBe('owned');
     expect(dex.get('Lampent').state).toBe('evolved');
@@ -268,12 +285,12 @@ describe('evolutions and goals', () => {
   it('a sold or fled shiny never completes a goal', () => {
     for (const status of ['sold', 'fled', 'traded']) {
       const c = { ...litwick, current_form: 'Chandelure', status };
-      expect(goalProgress({ species: 'Chandelure', priority: '', notes: '' }, [c], game).kind).toBe('open');
+      expect(goalProgress({ species: 'Chandelure', priority: 'b', notes: '' }, [c], game).kind).toBe('open');
     }
   });
 
   it('a Gardevoir cannot finish a Gallade goal', () => {
     const g = make({ species: 'Ralts', current_form: 'Gardevoir' });
-    expect(goalProgress({ species: 'Gallade', priority: '', notes: '' }, [g], game).kind).toBe('open');
+    expect(goalProgress({ species: 'Gallade', priority: 'b', notes: '' }, [g], game).kind).toBe('open');
   });
 });

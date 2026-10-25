@@ -119,9 +119,14 @@ export type CatchRow = Record<CatchColumn, string>;
 
 export const GOAL_COLUMNS = ['species', 'priority', 'notes'] as const;
 export type GoalRow = Record<(typeof GOAL_COLUMNS)[number], string>;
-/** Goal groups. Blank = unplanned. Old files (P1–P3 and a hunting status) are converted on read. */
-export const PRIORITIES = ['current', 'future'] as const;
-export const PRIORITY_LABEL: Record<string, string> = { current: 'Current', future: 'Future', '': 'Unplanned' };
+/**
+ * Goal tiers, top to bottom. Older files are converted on read: current (or P1 / a hunting status)
+ * -> hunting, future (or P2) -> s, P3 -> a, unplanned/blank -> b.
+ */
+export const PRIORITIES = ['hunting', 's', 'a', 'b'] as const;
+export const PRIORITY_LABEL: Record<string, string> = { hunting: 'Hunting', s: 'S tier', a: 'A tier', b: 'B tier' };
+export const PRIORITY_SHORT: Record<string, string> = { hunting: 'Hunting', s: 'S', a: 'A', b: 'B' };
+export const DEFAULT_PRIORITY = 'b';
 
 export const NOTE_COLUMNS = ['species', 'notes'] as const;
 export type NoteRow = Record<(typeof NOTE_COLUMNS)[number], string>;
