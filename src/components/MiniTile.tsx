@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { href } from '../lib/router';
 import { useStore } from '../lib/store';
-import { PRIORITIES, PRIORITY_LABEL, type GoalRow, type Species } from '../lib/types';
+import { PRIORITIES, PRIORITY_SHORT, type GoalRow, type Species } from '../lib/types';
 import { GoalControls } from './GoalControls';
 import { Sprite } from './Sprite';
-import { SparkleIcon } from './ui';
+import { HuntBadge, SparkleIcon } from './ui';
 
 /**
  * Small Pokémon tile used on Home and in the Dex. `tone` sets the frame: gold for a shiny you
@@ -20,6 +20,7 @@ export function MiniTile({ sp, shiny = true, tone, tags, menu, label }: {
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { game } = useStore();
 
   // Close the editor on outside click or Escape.
   useEffect(() => {
@@ -36,6 +37,7 @@ export function MiniTile({ sp, shiny = true, tone, tags, menu, label }: {
       <span className="mini-art">
         <Sprite id={sp.id} name={sp.name} shiny={shiny} size={64} />
         {tone === 'owned' && shiny && <SparkleIcon size={14} className="sparkle" />}
+        {game && <HuntBadge kind={game.huntKind(sp)} />}
       </span>
       <span className="mini-name">{label ?? sp.name}</span>
       <span className="mini-tags">{tags}</span>
@@ -58,9 +60,9 @@ export function GoalMenu({ species, goal }: { species: string; goal?: GoalRow })
   return (
     <div className="goal-controls">
       <span className="small muted" style={{ fontWeight: 600 }}>Add to</span>
-      {[...PRIORITIES, ''].map((p) => (
-        <button key={p || 'none'} type="button" className="btn btn--small" onClick={() => store.saveGoal({ species, priority: p, notes: '' })}>
-          {PRIORITY_LABEL[p]}
+      {PRIORITIES.map((p) => (
+        <button key={p} type="button" className="btn btn--small" onClick={() => store.saveGoal({ species, priority: p, notes: '' })}>
+          {PRIORITY_SHORT[p]}
         </button>
       ))}
     </div>

@@ -1,6 +1,6 @@
 import {
   CATCH_COLUMNS, CATCH_STATUSES, GOAL_COLUMNS, METHODS, NATURES, NOTE_COLUMNS,
-  SEASONS, WORTH_COLUMNS, WORTH_ITEMS, type CatchRow, type CatchStatus, type FileKey, type GoalRow, type NoteRow,
+  DEFAULT_PRIORITY, PRIORITIES, SEASONS, WORTH_COLUMNS, WORTH_ITEMS, type CatchRow, type CatchStatus, type FileKey, type GoalRow, type NoteRow,
   type WorthRow,
 } from './types';
 
@@ -391,15 +391,17 @@ export function normalizeGoals(input: Record<string, unknown>[], resolve: Resolv
     if (seen.has(sp)) { issues.push(`Entry ${i + 1}: ${sp} is listed twice; kept the first.`); return; }
     seen.add(sp);
     row.species = sp;
-    // Older files used P1–P3 plus a separate "hunting" status: hunting or P1 is current, P2/P3 future.
-    const p = row.priority.toLowerCase();
+    // Tiers: hunting, s, a, b. Older files: a hunting status, P1 or "current" -> hunting;
+    // P2 or "future" -> s; P3 -> a; blank or "unplanned" -> b.
+    const p = row.priority.toLowerCase().replace(/\s*tier$/, '');
     const legacyStatus = Object.prototype.hasOwnProperty.call(raw, 'status') ? String(raw.status).toLowerCase() : '';
-    if (legacyStatus === 'hunting' || p === 'p1') row.priority = 'current';
-    else if (p === 'p2' || p === 'p3') row.priority = 'future';
-    else if (p === 'current' || p === 'future' || p === '') row.priority = p;
+    const LEGACY: Record<string, string> = { p1: 'hunting', current: 'hunting', p2: 's', future: 's', p3: 'a', '': 'b', unplanned: 'b' };
+    if (legacyStatus === 'hunting') row.priority = 'hunting';
+    else if ((PRIORITIES as readonly string[]).includes(p)) row.priority = p;
+    else if (p in LEGACY) row.priority = LEGACY[p];
     else {
-      issues.push(`Entry ${i + 1}: priority "${row.priority}" should be current or future. Treated as unplanned.`);
-      row.priority = '';
+      issues.push(`Entry ${i + 1}: tier "${row.priority}" should be hunting, s, a or b. Put it in B tier.`);
+      row.priority = DEFAULT_PRIORITY;
     }
     rows.push(row);
   });

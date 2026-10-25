@@ -17,8 +17,7 @@ export function DexPage() {
   const [soloOnly, setSoloOnly] = useState(false);
   const [finalPref, setFinalPref] = usePref<'all' | 'final'>('dex-forms', 'all');
   const finalOnly = finalPref === 'final';
-  const [ownPref, setOwnPref] = usePref<'all' | 'unowned'>('dex-owned', 'all');
-  const unownedOnly = ownPref === 'unowned';
+  const [ownPref, setOwnPref] = usePref<'all' | 'unowned' | 'missing'>('dex-owned', 'all');
   const [limit, setLimit] = useState(PAGE);
   const shiny = mode === 'shiny';
 
@@ -28,7 +27,9 @@ export function DexPage() {
       // Final forms: nothing left to evolve into (single-stage Pokémon count).
       if (finalOnly && sp.evolvesTo.length > 0) return false;
       // Unowned: no shiny you still have is this species now (or passed through it).
-      if (unownedOnly && isOwnedState(d.dex.get(sp.name).state)) return false;
+      // Missing: unowned and not one of your goals either.
+      if (ownPref !== 'all' && isOwnedState(d.dex.get(sp.name).state)) return false;
+      if (ownPref === 'missing' && d.goals.has(sp.name)) return false;
       if (season || soloOnly) {
         const spots = hordeSpots(sp, season);
         if (!spots.length) return false;
@@ -41,9 +42,9 @@ export function DexPage() {
       }
       return true;
     });
-  }, [d, query, season, soloOnly, finalOnly, unownedOnly]);
+  }, [d, query, season, soloOnly, finalOnly, ownPref]);
 
-  useEffect(() => setLimit(PAGE), [query, season, soloOnly, finalOnly, unownedOnly]);
+  useEffect(() => setLimit(PAGE), [query, season, soloOnly, finalOnly, ownPref]);
 
   const sentinel = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -82,10 +83,12 @@ export function DexPage() {
             <input type="checkbox" checked={finalOnly} onChange={(e) => setFinalPref(e.target.checked ? 'final' : 'all')} />
             Final forms only
           </label>
-          <label className="check">
-            <input type="checkbox" checked={unownedOnly} onChange={(e) => setOwnPref(e.target.checked ? 'unowned' : 'all')} />
-            Unowned
-          </label>
+          <div className="segmented segmented--small" role="group" aria-label="Show">
+            {([['all', 'All'], ['unowned', 'Unowned'], ['missing', 'Missing']] as const).map(([k, l]) => (
+              <button key={k} type="button" aria-pressed={ownPref === k} onClick={() => setOwnPref(k)}
+                title={k === 'missing' ? "Not owned and not in your goals" : k === 'unowned' ? 'No shiny you still have' : undefined}>{l}</button>
+            ))}
+          </div>
           <span className="small muted" style={{ marginLeft: 'auto' }} aria-live="polite">
             Showing {formatCount(list.length)} of {formatCount(d.game.list.length)}
           </span>
@@ -121,7 +124,7 @@ function DexTile({ sp, shiny }: { sp: Species; shiny: boolean }) {
   else if (entry.state === 'gone') tag = <Pill tone="neutral">{STATUS_LABEL[latest?.status ?? ''] ?? 'Gone'}</Pill>;
   else if (goal && progress?.kind !== 'done') {
     tag = progress?.kind === 'evolve' ? <Pill tone="teal">Have {progress.from}</Pill>
-      : <Pill tone={goal.priority === 'current' ? 'ember' : 'teal'}>{PRIORITY_LABEL[goal.priority] === 'Unplanned' ? 'Goal' : PRIORITY_LABEL[goal.priority]}</Pill>;
+      : <Pill tone={goal.priority === 'hunting' ? 'ember' : 'teal'}>{PRIORITY_LABEL[goal.priority] ?? 'Goal'}</Pill>;
   }
   return <MiniTile sp={sp} shiny={shiny} tone={tone} tags={tag} menu={<GoalMenu species={sp.name} goal={goal} />} />;
 }

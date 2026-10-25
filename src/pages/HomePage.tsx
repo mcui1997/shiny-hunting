@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Combobox } from '../components/Combobox';
 import { GoalMenu, MiniTile } from '../components/MiniTile';
 import { Totals } from '../components/Totals';
@@ -8,9 +8,8 @@ import { useDerived } from '../lib/derived';
 import { href } from '../lib/router';
 import { currentSpecies } from '../lib/stats';
 import { useStore } from '../lib/store';
-import { PRIORITIES, PRIORITY_LABEL, type CatchStatus, type GoalRow } from '../lib/types';
+import { DEFAULT_PRIORITY, PRIORITIES, PRIORITY_LABEL, type CatchStatus, type GoalRow } from '../lib/types';
 
-const GROUPS = ['current', 'future', ''];
 const byName = <T extends { name: string }>(a: T, b: T) => a.name.localeCompare(b.name);
 
 export function HomePage() {
@@ -37,16 +36,18 @@ export function HomePage() {
     <div className="stack" style={{ gap: 28 }}>
       <Totals s={s} />
 
-      <section aria-labelledby="owned-h" className="stack" style={{ gap: 12 }}>
+      <section aria-label="Tier list" className="stack" style={{ gap: 12 }}>
         <div className="row row--between">
-          <h2 id="owned-h" className="h2">Owned <span className="count">{s.total}</span></h2>
-          <a className="btn btn--small" href={href.newCatch()}>Log a shiny</a>
+          <h1 className="h2">Shinies</h1>
+          <div className="row" style={{ gap: 8 }}>
+            <AddGoal />
+            <a className="btn btn--small" href={href.newCatch()}>Log a shiny</a>
+          </div>
         </div>
-        {owned.length === 0 ? (
-          <p className="empty">No shinies yet. Your first one goes here.</p>
-        ) : (
-          <div className="mini-grid">
-            {owned.map((g) => {
+
+        <div className="tiers">
+          <TierRow tier="owned" label="Owned" count={s.total}>
+            {owned.length === 0 ? <span className="tier-empty">No shinies yet. Your first one goes here.</span> : owned.map((g) => {
               const sp = d.game.byName.get(g.name);
               const kept = g.status === 'kept';
               if (!sp) return null;
@@ -57,31 +58,33 @@ export function HomePage() {
                 </>} />
               );
             })}
-          </div>
-        )}
-      </section>
-
-      <section aria-labelledby="planned-h" className="stack" style={{ gap: 16 }}>
-        <div className="row row--between">
-          <h2 id="planned-h" className="h2">Goals <span className="count">{planned.length}</span></h2>
-          <AddGoal />
+          </TierRow>
+          {PRIORITIES.map((p) => {
+            const items = planned.filter((g) => g.priority === p).map((g) => ({ ...g, name: g.species })).sort(byName);
+            return (
+              <TierRow key={p} tier={p} label={PRIORITY_LABEL[p]} count={items.length}>
+                {items.length === 0
+                  ? <span className="tier-empty">Empty. Use ⋯ on any tile, or Add a goal.</span>
+                  : items.map((g) => <PlannedTile key={g.species} goal={g} />)}
+              </TierRow>
+            );
+          })}
         </div>
-        {planned.length === 0 && <p className="empty">No goals yet. Add one, or use + Goal on any Pokémon's page.</p>}
-        {GROUPS.map((p) => {
-          const label = PRIORITY_LABEL[p];
-          const items = planned.filter((g) => g.priority === p).map((g) => ({ ...g, name: g.species })).sort(byName);
-          if (!items.length) return null;
-          return (
-            <div key={p || 'none'} className="prio-row">
-              <h3 className="prio-label">{label} <span className="count">{items.length}</span></h3>
-              <div className="mini-grid">
-                {items.map((g) => <PlannedTile key={g.species} goal={g} />)}
-              </div>
-            </div>
-          );
-        })}
       </section>
     </div>
+  );
+}
+
+function TierRow({ tier, label, count, children }: { tier: string; label: string; count: number; children: ReactNode }) {
+  const short = label.replace(/ tier$/, '');
+  return (
+    <section className={`tier tier--${tier}`} aria-label={`${label}, ${count}`}>
+      <div className="tier-label">
+        <span className="tier-name">{short}</span>
+        <span className="tier-count">{count}</span>
+      </div>
+      <div className="mini-grid tier-items">{children}</div>
+    </section>
   );
 }
 
@@ -99,7 +102,7 @@ function AddGoal() {
   const d = useDerived()!;
   const store = useStore();
   const [text, setText] = useState('');
-  const [priority, setPriority] = useState('');
+  const [priority, setPriority] = useState<string>(DEFAULT_PRIORITY);
   const [error, setError] = useState<string | null>(null);
 
   function add() {
@@ -121,7 +124,6 @@ function AddGoal() {
       <label className="sr-only" htmlFor="add-goal-p">Priority</label>
       <select id="add-goal-p" className="select select--compact" value={priority} onChange={(e) => setPriority(e.target.value)}>
         {PRIORITIES.map((p) => <option key={p} value={p}>{PRIORITY_LABEL[p]}</option>)}
-        <option value="">{PRIORITY_LABEL['']}</option>
       </select>
       <button type="submit" className="btn btn--small btn--primary">Add</button>
       {error && <span id="add-goal-error" className="small" role="alert" style={{ color: 'var(--ember-ink)', flexBasis: '100%' }}>{error}</span>}

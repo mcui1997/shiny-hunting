@@ -2,12 +2,12 @@ import { Fragment } from 'react';
 import { DexEntry, HuntSummaryPanel } from '../components/DexEntry';
 import { GoalControls } from '../components/GoalControls';
 import { Sprite } from '../components/Sprite';
-import { BackLink, catchStatusPill, dexNo, formatWhen, Pill, SparkleIcon } from '../components/ui';
+import { BackLink, catchStatusPill, dexNo, formatWhen, HuntBadge, Pill, SparkleIcon } from '../components/ui';
 import { useDerived } from '../lib/derived';
 import { href } from '../lib/router';
 import { currentSpecies, formatCount, isMineState, isOwned, isOwnedState } from '../lib/stats';
 import { useStore } from '../lib/store';
-import type { CatchRow, Species } from '../lib/types';
+import { DEFAULT_PRIORITY, type CatchRow, type Species } from '../lib/types';
 
 export function SpeciesPage({ id }: { id: number }) {
   const d = useDerived()!;
@@ -41,7 +41,7 @@ export function SpeciesPage({ id }: { id: number }) {
             <div className="mini-tile"><Sprite id={sp.id} name={sp.name} shiny={false} size={48} eager /></div>
             <div style={{ minWidth: 0 }}>
               <h1 className="h1 h1--species">{sp.name}</h1>
-              <span className="muted">{sp.types.join(' · ')}</span>
+              <span className="muted row" style={{ gap: 8 }}>{sp.types.join(' · ')} <HuntBadge kind={d.game.huntKind(sp)} /></span>
             </div>
           </div>
           <Tracking sp={sp} />
@@ -104,7 +104,7 @@ function Tracking({ sp }: { sp: Species }) {
           ) : (
             <a className="btn btn--small btn--primary" href={href.newCatch(sp.name)}>Log shiny</a>
           )}
-          {!goal && <button type="button" className="btn btn--small" onClick={() => store.saveGoal({ species: sp.name, priority: '', notes: '' })}>+ Goal</button>}
+          {!goal && <button type="button" className="btn btn--small" onClick={() => store.saveGoal({ species: sp.name, priority: DEFAULT_PRIORITY, notes: '' })}>+ Goal</button>}
           {lineCatch && <a className="btn btn--small btn--ghost" href={href.newCatch(sp.name)}>Log a new one</a>}
         </div>
       )}
