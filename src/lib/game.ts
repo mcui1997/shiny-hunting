@@ -1,7 +1,8 @@
 import { SEASONS, TIMES, type GameData, type HordeRow, type Season, type Species } from './types';
 
-export type HuntKind = '5x' | '3x' | 'egg' | 'other';
-export const HUNT_KIND_LABEL: Record<HuntKind, string> = { '5x': '5x horde', '3x': '3x horde', egg: 'Egg', other: 'Other' };
+export type HuntKind = '5x' | '3x' | 'fishing' | 'egg' | 'other';
+export const HUNT_KIND_LABEL: Record<HuntKind, string> = { '5x': '5x horde', '3x': '3x horde', fishing: 'Fishing', egg: 'Egg', other: 'Other' };
+const FISHING = /Rod|Fishing/;
 
 export class Game {
   readonly byId = new Map<number, Species>();
@@ -73,7 +74,7 @@ export class Game {
 
   /**
    * The easiest way to get it, for the little tile badge: a 5x horde of it (or an earlier stage),
-   * else a 3x horde, else an egg if anything in its line can breed, else other.
+   * else a 3x horde, else fishing, else an egg if anything in its line can breed, else other.
    */
   huntKind(sp: Species): HuntKind {
     const cached = this.kinds.get(sp.id);
@@ -81,7 +82,8 @@ export class Game {
     const line = this.family(sp.id).filter((f) => this.canBecome(f.id, sp.id));
     const sizes = new Set(line.flatMap((f) => hordeSpots(f).map((s) => s.row.size)));
     const breeds = this.family(sp.id).some((f) => f.dex.eggGroups.some((g) => g !== 'Cannot Breed' && g !== 'Ditto'));
-    const kind: HuntKind = sizes.has(5) ? '5x' : sizes.has(3) ? '3x' : breeds ? 'egg' : 'other';
+    const fishes = line.some((f) => f.singles.some((s) => FISHING.test(s.type)) || f.rare.some((r) => FISHING.test(r.type)));
+    const kind: HuntKind = sizes.has(5) ? '5x' : sizes.has(3) ? '3x' : fishes ? 'fishing' : breeds ? 'egg' : 'other';
     this.kinds.set(sp.id, kind);
     return kind;
   }

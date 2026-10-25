@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { makeResolver, normalizeCatches, normalizeGoals, normalizeNotes, normalizeWorth, parseTracker, toTrackerJson } from './data';
 import { Game, hordeSpots, huntSummary, shareIn } from './game';
 import { goalProgress } from './goals';
+import { suggestedNote } from './notes';
 import { chanceWithin, DexIndex, poissonAtLeast, summarize } from './stats';
 import { CATCH_COLUMNS, type CatchRow, type GameData } from './types';
 
@@ -166,9 +167,26 @@ describe('hunt badge', () => {
     expect(kind('Treecko')).toBe('egg');
     expect(kind('Mewtwo')).toBe('other');
   });
-  it('every species gets one of the four', () => {
-    for (const p of game.list) expect(['5x', '3x', 'egg', 'other']).toContain(game.huntKind(p));
+  it('fishing when it (or an earlier stage) is fished and has no horde', () => {
+    expect(kind('Wailmer')).toBe('fishing');
+    expect(kind('Wailord')).toBe('fishing');
+    expect(kind('Milotic')).toBe('fishing'); // via Feebas
+    expect(kind('Magikarp')).toBe('5x'); // fished too, but it has a 5x horde
   });
+  it('every species gets one of the five', () => {
+    for (const p of game.list) expect(['5x', '3x', 'fishing', 'egg', 'other']).toContain(game.huntKind(p));
+  });
+});
+
+describe('suggested notes', () => {
+  const note = (n: string) => suggestedNote(game.byName.get(n));
+  it('leads with useful abilities, then moves', () => {
+    expect(note('Chandelure')).toMatch(/^Flame Body: eggs hatch 50% faster/);
+    expect(note('Natu')).toMatch(/Synchronize: 20% chance/);
+    expect(note('Golurk')).toMatch(/With No Guard \(hidden ability\)/);
+    expect(note('Gengar')).toMatch(/Learns .*Hypnosis/);
+  });
+  it('says so when there is nothing', () => expect(note('Nidoking')).toMatch(/show off/));
 });
 
 describe('ability text', () => {

@@ -1,6 +1,6 @@
 import {
   CATCH_COLUMNS, CATCH_STATUSES, GOAL_COLUMNS, METHODS, NATURES, NOTE_COLUMNS,
-  DEFAULT_PRIORITY, PRIORITIES, SEASONS, WORTH_COLUMNS, WORTH_ITEMS, type CatchRow, type CatchStatus, type FileKey, type GoalRow, type NoteRow,
+  DEFAULT_PRIORITY, PRIORITIES, SCREENSHOT_NAME, SEASONS, WORTH_COLUMNS, WORTH_ITEMS, type CatchRow, type CatchStatus, type FileKey, type GoalRow, type NoteRow,
   type WorthRow,
 } from './types';
 
@@ -251,7 +251,7 @@ export interface Normalized<T> {
 const blankRow = <K extends string>(cols: readonly K[]) =>
   Object.fromEntries(cols.map((c) => [c, ''])) as Record<K, string>;
 
-const LONG_FIELDS = new Set(['notes']);
+const LONG_FIELDS = new Set(['notes', 'note']);
 
 /** Copy only known columns, cleaned and length-capped. */
 function pick<K extends string>(raw: Record<string, unknown>, cols: readonly K[], line: number, issues: string[]) {
@@ -342,10 +342,9 @@ export function normalizeCatches(input: Record<string, unknown>[], resolve: Reso
       else row.nature = n;
     }
 
-    if (row.tag) {
-      const t = normalizeTag(row.tag);
-      if (t !== row.tag.toLowerCase().trim()) issues.push(`Entry ${line}: tag "${row.tag}" was simplified to "${t}".`);
-      row.tag = t;
+    if (row.screenshot && !SCREENSHOT_NAME.test(row.screenshot)) {
+      issues.push(`Entry ${line}: screenshot "${row.screenshot}" should be a file name like s001-aron.webp. Cleared it.`);
+      row.screenshot = '';
     }
 
     if (!/^[A-Za-z0-9_-]{1,20}$/.test(row.id) || usedIds.has(row.id)) row.id = '';
@@ -365,11 +364,6 @@ export function normalizeCatches(input: Record<string, unknown>[], resolve: Reso
 }
 
 const pad3 = (n: number) => String(n).padStart(3, '0');
-
-/** Tags are short, lowercase, letters/numbers/spaces/hyphens: "Utility " -> "utility". */
-export function normalizeTag(raw: string): string {
-  return raw.toLowerCase().replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, ' ').trim().slice(0, 24).trim();
-}
 
 export function nextCatchId(rows: CatchRow[]): string {
   const used = new Set(rows.map((r) => r.id));

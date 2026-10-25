@@ -5,7 +5,7 @@ import { useDerived } from '../lib/derived';
 import { hordeSpots } from '../lib/game';
 import { usePref } from '../lib/prefs';
 import { formatCount, isOwnedState } from '../lib/stats';
-import { PRIORITY_LABEL, SEASONS, type Season, type Species } from '../lib/types';
+import { PRIORITY_LABEL, type Species } from '../lib/types';
 
 const PAGE = 240;
 
@@ -13,7 +13,6 @@ export function DexPage() {
   const d = useDerived()!;
   const [mode, setMode] = usePref<'shiny' | 'normal'>('sprites', 'shiny');
   const [query, setQuery] = useState('');
-  const [season, setSeason] = useState<Season | null>(null);
   const [soloOnly, setSoloOnly] = useState(false);
   const [finalPref, setFinalPref] = usePref<'all' | 'final'>('dex-forms', 'all');
   const finalOnly = finalPref === 'final';
@@ -30,10 +29,9 @@ export function DexPage() {
       // Missing: unowned and not one of your goals either.
       if (ownPref !== 'all' && isOwnedState(d.dex.get(sp.name).state)) return false;
       if (ownPref === 'missing' && d.goals.has(sp.name)) return false;
-      if (season || soloOnly) {
-        const spots = hordeSpots(sp, season);
-        if (!spots.length) return false;
-        if (soloOnly && spots[0].best < 100) return false;
+      if (soloOnly) {
+        const spots = hordeSpots(sp);
+        if (!spots.length || spots[0].best < 100) return false;
       }
       if (q) {
         const inName = sp.name.toLowerCase().includes(q) || String(sp.id) === q.replace(/^#0*/, '');
@@ -42,9 +40,9 @@ export function DexPage() {
       }
       return true;
     });
-  }, [d, query, season, soloOnly, finalOnly, ownPref]);
+  }, [d, query, soloOnly, finalOnly, ownPref]);
 
-  useEffect(() => setLimit(PAGE), [query, season, soloOnly, finalOnly, ownPref]);
+  useEffect(() => setLimit(PAGE), [query, soloOnly, finalOnly, ownPref]);
 
   const sentinel = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -71,11 +69,7 @@ export function DexPage() {
         </div>
 
         <div className="chips">
-          <span className="chips-label">Horde in</span>
-          {SEASONS.map((s) => (
-            <button key={s} type="button" className="chip chip--season" aria-pressed={season === s} onClick={() => setSeason(season === s ? null : s)}>{s}</button>
-          ))}
-          <label className="check" style={{ marginLeft: 8 }}>
+          <label className="check">
             <input type="checkbox" checked={soloOnly} onChange={(e) => setSoloOnly(e.target.checked)} />
             Solo spots only
           </label>

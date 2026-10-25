@@ -10,7 +10,7 @@
 </p>
 
 - **Home** – totals and a tier list: Owned, Hunting, S, A, B
-- **Owned** – every catch with date, encounters and tags
+- **Owned** – every catch; open one for its battle screenshot, details and a note
 - **Dex** – all 649 Pokémon with filters for final forms, unowned and missing
 - **Species pages** – abilities, uses, stats, and the best 5x horde per season
 - **Stats** – luck against 1 in 27,000 (donator), encounters per shiny, and net worth

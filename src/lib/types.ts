@@ -108,11 +108,11 @@ export const NON_HUNT_METHODS = ['traded', 'bought'];
 export const CATCH_COLUMNS = [
   'id', 'species', 'form', 'current_form', 'evolved_on', 'caught_at', 'encounters', 'method',
   'location', 'season', 'nature', 'ivs', 'ball', 'odds', 'status', 'sold_on',
-  'tag', 'value',
+  'value', 'screenshot', 'note',
 ] as const;
 
-/** Suggested categories for grouping owned shinies. Any short tag works. */
-export const DEFAULT_TAGS = ['utility', 'cosmetic'];
+/** Screenshot file names live in public/screenshots/. Only plain names like "s001-aron.webp". */
+export const SCREENSHOT_NAME = /^[a-z0-9][a-z0-9-]{0,60}\.(webp|png|jpe?g)$/;
 export type CatchColumn = (typeof CATCH_COLUMNS)[number];
 /** One catch. Every value is held as a string (blank = not set); helpers parse numbers and dates. */
 export type CatchRow = Record<CatchColumn, string>;
