@@ -3,7 +3,7 @@ import { resolve as resolvePath } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { makeResolver, normalizeCatches, normalizeGoals, normalizeNotes, normalizeWorth, parseTracker, toTrackerJson } from './data';
 import { Game, hordeSpots, huntSummary, shareIn } from './game';
-import { gameTime } from './clock';
+import { gameTime, nextSeason, untilLabel, upcomingPhases } from './clock';
 import { goalProgress } from './goals';
 import { suggestedNote } from './notes';
 import { chanceWithin, DexIndex, poissonAtLeast, summarize } from './stats';
@@ -342,5 +342,30 @@ describe('PokeMMO clock', () => {
     expect(gameTime(new Date('2026-10-01T01:00Z')).period).toBe('Morning'); // in-game 04:00
     expect(gameTime(new Date('2026-10-01T03:00Z')).period).toBe('Day'); // 12:00
     expect(gameTime(new Date('2026-10-01T05:30Z')).period).toBe('Night'); // 22:00
+  });
+});
+
+describe('clock schedule', () => {
+  it('lists the next period changes in order, 15 real minutes per in-game hour', () => {
+    // 2026-10-01 00:00 UTC is in-game 00:00 (night). Next: morning at 01:00 UTC, day 02:45, night 05:15.
+    const p = upcomingPhases(new Date('2026-10-01T00:00:30Z'), 4);
+    expect(p.map((x) => [x.period, x.at.toISOString()])).toEqual([
+      ['Morning', '2026-10-01T01:00:00.000Z'],
+      ['Day', '2026-10-01T02:45:00.000Z'],
+      ['Night', '2026-10-01T05:15:00.000Z'],
+      ['Morning', '2026-10-01T07:00:00.000Z'],
+    ]);
+    // each listed start really is that period
+    for (const x of upcomingPhases(new Date('2026-10-26T05:00Z'), 9)) expect(gameTime(x.at).period).toBe(x.period);
+  });
+  it('next season is the next UTC month', () => {
+    expect(nextSeason(new Date('2026-10-26T05:00Z'))).toEqual({ season: 'Autumn', at: new Date('2026-11-01T00:00:00Z') });
+    expect(nextSeason(new Date('2026-12-31T23:00Z')).season).toBe('Spring');
+  });
+  it('countdown labels', () => {
+    const a = new Date('2026-10-01T00:00:00Z');
+    expect(untilLabel(a, new Date('2026-10-01T00:00:40Z'))).toBe('in 40 s');
+    expect(untilLabel(a, new Date('2026-10-01T00:12:00Z'))).toBe('in 12 m');
+    expect(untilLabel(a, new Date('2026-10-01T01:05:00Z'))).toBe('in 1 h 05 m');
   });
 });

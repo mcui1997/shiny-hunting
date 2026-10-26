@@ -429,7 +429,26 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
 }
 
 /* ---------- header clock ---------- */
-.clock { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 9px; border-radius: 12px; background: var(--paper); border: 1px solid var(--line); margin-right: auto; margin-left: 8px; }
+.clock-wrap { position: relative; margin-right: auto; margin-left: 8px; }
+.clock { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 9px; border-radius: 12px; background: var(--paper); border: 1px solid var(--line); font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.clock:hover, .clock[aria-expanded='true'] { border-color: var(--line-strong); }
+.clock:focus-visible { outline: 3px solid var(--lagoon-soft); }
+.clock-pop { position: absolute; z-index: 40; top: calc(100% + 8px); left: 0; width: 340px; max-width: calc(100vw - 32px); background: var(--paper); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(22, 32, 29, .16); padding: 14px 16px; display: none; flex-direction: column; gap: 10px; }
+/* Hover (mouse) or click / tap / Enter (is-open) shows the schedule. */
+@media (hover: hover) { .clock-wrap:hover .clock-pop { display: flex; } }
+.clock-wrap.is-open .clock-pop { display: flex; }
+.clock-now { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.clock-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.clock-table th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--moss); padding: 0 0 4px; }
+.clock-table td { padding: 5px 0; border-top: 1px solid #EDF1EE; white-space: nowrap; }
+.clock-table td:first-child { font-weight: 700; }
+.clock-table td + td, .clock-table th + th { padding-left: 10px; }
+.clock-dot { display: inline-block; width: 8px; height: 8px; border-radius: 999px; margin-right: 6px; vertical-align: 1px; }
+.clock-row--morning .clock-dot { background: #F2B43A; }
+.clock-row--day .clock-dot { background: #D99A06; }
+.clock-row--night .clock-dot { background: #3C4A8C; }
+.clock-foot { margin: 0; line-height: 1.4; }
 .clock-icon { width: 24px; height: 24px; border-radius: 999px; display: grid; place-items: center; flex: none; }
 .clock-icon--morning { background: #FDF1D6; color: #C98A12; }
 .clock-icon--day { background: #FEF3C7; color: #D99A06; }
@@ -438,8 +457,8 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
 .clock-game { font-size: 13px; font-weight: 700; color: var(--ink); white-space: nowrap; }
 .clock-game .mono { font-weight: 700; }
 .clock-real { font-size: 11.5px; color: var(--moss); white-space: nowrap; }
-@media (max-width: 1100px) { .clock { margin-left: 0; } }
-@media (max-width: 720px) { .clock { order: 3; margin: 0; } }
+@media (max-width: 1100px) { .clock-wrap { margin-left: 0; } }
+@media (max-width: 720px) { .clock-wrap { order: 3; margin: 0; } }
 
 /* ---------- dex totals ---------- */
 .dex-totals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
@@ -452,3 +471,4 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
 .dex-total-bar > span { display: block; height: 100%; background: var(--sparkle); border-radius: inherit; }
 .dex-total .small { grid-area: pct; }
 @media (max-width: 560px) { .dex-totals { grid-template-columns: minmax(0, 1fr); } }
+.clock-time { font-variant-numeric: tabular-nums; }

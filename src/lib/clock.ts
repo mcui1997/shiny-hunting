@@ -34,3 +34,47 @@ export function gameTime(now: Date): GameTime {
 }
 
 export const pad2 = (n: number) => String(n).padStart(2, '0');
+
+export type Period = GameTime['period'];
+/** In-game hour each period starts. */
+const PERIOD_STARTS: [number, Period][] = [[4, 'Morning'], [11, 'Day'], [21, 'Night']];
+
+export interface PhaseChange {
+  period: Period;
+  /** Real moment it starts. */
+  at: Date;
+  /** In-game weekday it starts on. */
+  weekday: GameTime['weekday'];
+}
+
+/** The next `count` period changes after `now` (one in-game hour = 15 real minutes). */
+export function upcomingPhases(now: Date, count = 6): PhaseChange[] {
+  const out: PhaseChange[] = [];
+  const t = now.getTime();
+  for (let block = Math.floor(t / BLOCK_MS); out.length < count; block++) {
+    for (const [h, period] of PERIOD_STARTS) {
+      const at = block * BLOCK_MS + h * 15 * 60 * 1000;
+      if (at > t && out.length < count) {
+        out.push({ period, at: new Date(at), weekday: WEEKDAYS[(((block + WEEKDAY_OFFSET) % 7) + 7) % 7] });
+      }
+    }
+  }
+  return out;
+}
+
+/** When the season next changes: the start of the next UTC month. */
+export function nextSeason(now: Date): { season: Season; at: Date } {
+  const at = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+  return { season: SEASONS[at.getUTCMonth() % 4], at };
+}
+
+/** "in 1 h 05 m" / "in 12 m" / "in 40 s". */
+export function untilLabel(from: Date, to: Date): string {
+  const s = Math.max(0, Math.round((to.getTime() - from.getTime()) / 1000));
+  if (s < 60) return `in ${s} s`;
+  const m = Math.round(s / 60);
+  if (m < 60) return `in ${m} m`;
+  const h = Math.floor(m / 60);
+  if (h < 48) return `in ${h} h ${pad2(m % 60)} m`;
+  return `in ${Math.round(h / 24)} days`;
+}
