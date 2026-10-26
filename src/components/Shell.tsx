@@ -3,6 +3,7 @@ import { href, type Route } from '../lib/router';
 import { LIMITS } from '../lib/data';
 import type { FileKey } from '../lib/types';
 import { downloadText, useStore, type ImportResult } from '../lib/store';
+import { Clock } from './Clock';
 import { SparkleIcon } from './ui';
 
 const FILE_NAME = 'tracker.json';
@@ -51,6 +52,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
             <span className="brand-sub">PokeMMO Shiny Log</span>
           </span>
         </a>
+        <Clock />
         <nav className="nav" aria-label="Main">
           {navLink('home', href.home(), 'Home')}
           {navLink('caught', href.caught(), 'Owned')}
