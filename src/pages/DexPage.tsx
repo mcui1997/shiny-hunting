@@ -53,10 +53,28 @@ export function DexPage() {
     return () => io.disconnect();
   }, [limit, list.length]);
 
+  // Collection totals: every species, and just final forms (nothing left to evolve into).
+  const finals = d.game.list.filter((sp) => sp.evolvesTo.length === 0);
+  const ownedOf = (xs: Species[]) => xs.filter((sp) => isOwnedState(d.dex.get(sp.name).state)).length;
+  const totals = [
+    { label: 'All Pokémon', owned: ownedOf(d.game.list), total: d.game.list.length },
+    { label: 'Final forms', owned: ownedOf(finals), total: finals.length },
+  ];
+
   return (
     <div className="stack" style={{ gap: 28 }}>
 
       <section aria-label="Dex" className="stack" style={{ gap: 18 }}>
+        <div className="dex-totals">
+          {totals.map((t) => (
+            <div key={t.label} className="dex-total">
+              <span className="eyebrow">{t.label}</span>
+              <span className="dex-total-num"><strong className="mono">{t.owned}</strong><span className="muted"> / {formatCount(t.total)} owned</span></span>
+              <span className="dex-total-bar" aria-hidden="true"><span style={{ width: `${Math.max(1, (t.owned / t.total) * 100)}%` }} /></span>
+              <span className="small muted">{((t.owned / t.total) * 100).toFixed(1)}%</span>
+            </div>
+          ))}
+        </div>
         <div className="toolbar">
           <div className="field search">
             <label htmlFor="dex-search">Search</label>

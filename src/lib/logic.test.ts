@@ -3,6 +3,7 @@ import { resolve as resolvePath } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { makeResolver, normalizeCatches, normalizeGoals, normalizeNotes, normalizeWorth, parseTracker, toTrackerJson } from './data';
 import { Game, hordeSpots, huntSummary, shareIn } from './game';
+import { gameTime } from './clock';
 import { goalProgress } from './goals';
 import { suggestedNote } from './notes';
 import { chanceWithin, DexIndex, poissonAtLeast, summarize } from './stats';
@@ -310,5 +311,36 @@ describe('evolutions and goals', () => {
   it('a Gardevoir cannot finish a Gallade goal', () => {
     const g = make({ species: 'Ralts', current_form: 'Gardevoir' });
     expect(goalProgress({ species: 'Gallade', priority: 'b', notes: '' }, [g], game).kind).toBe('open');
+  });
+});
+
+describe('PokeMMO clock', () => {
+  // [logged catch time in Central (CDT, UTC-5), weekday, in-game time, season] read off each screenshot.
+  // The screenshot is taken a few minutes before the catch is logged, so allow up to 15 real minutes.
+  const shots: [string, string, string, string][] = [
+    ['2026-09-23T21:04-05:00', 'Saturday', '08:04', 'Spring'], // Aron
+    ['2026-09-30T22:59-05:00', 'Saturday', '15:43', 'Summer'], // Heatmor
+    ['2026-10-02T09:33-05:00', 'Friday', '10:00', 'Summer'], // Krokorok
+    ['2026-10-05T18:39-05:00', 'Thursday', '22:24', 'Summer'], // Haunter
+    ['2026-10-09T10:16-05:00', 'Friday', '12:53', 'Summer'], // Torkoal
+    ['2026-10-14T04:37-05:00', 'Wednesday', '14:18', 'Summer'], // Litwick
+    ['2026-10-16T17:00-05:00', 'Saturday', '15:55', 'Summer'], // Magikarp
+    ['2026-10-17T16:17-05:00', 'Wednesday', '12:52', 'Summer'], // Smeargle
+    ['2026-10-17T19:14-05:00', 'Thursday', '00:48', 'Summer'], // Nidorino
+    ['2026-10-20T23:16-05:00', 'Tuesday', '16:36', 'Summer'], // Natu
+    ['2026-10-24T19:01-05:00', 'Wednesday', '23:34', 'Summer'], // Golett
+  ];
+  it.each(shots)('%s shows %s %s %s', (logged, weekday, time, season) => {
+    const [h, m] = time.split(':').map(Number);
+    const at = new Date(logged).getTime();
+    // Some real moment in the 15 minutes before logging must show exactly that clock.
+    const match = Array.from({ length: 15 * 60 }, (_, s) => gameTime(new Date(at - s * 1000)))
+      .find((g) => g.weekday === weekday && g.hour === h && g.minute === m && g.season === season);
+    expect(match).toBeDefined();
+  });
+  it('periods', () => {
+    expect(gameTime(new Date('2026-10-01T01:00Z')).period).toBe('Morning'); // in-game 04:00
+    expect(gameTime(new Date('2026-10-01T03:00Z')).period).toBe('Day'); // 12:00
+    expect(gameTime(new Date('2026-10-01T05:30Z')).period).toBe('Night'); // 22:00
   });
 });

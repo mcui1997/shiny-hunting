@@ -15,6 +15,6 @@
 - **Species pages** – abilities, uses, stats, and the best 5x horde per season
 - **Stats** – luck against 1 in 27,000 (donator), encounters per shiny, and net worth
 
-All data lives in `public/data/tracker.json`. Edit on the site, export, and commit.
+The header clock shows PokeMMO's in-game time and season next to yours. All data lives in `public/data/tracker.json`. Edit on the site, export, and commit.
 
 <sub>Game data from <a href="https://github.com/PokeMMO-Tools/pokemmo-hub">PokeMMO Hub</a> · sprites from <a href="https://github.com/PokeAPI/sprites">PokeAPI</a></sub>
