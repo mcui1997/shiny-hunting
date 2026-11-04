@@ -11,7 +11,8 @@
     {"id":"s008","species":"Smeargle","caught_at":"2026-10-17 16:17","encounters":7671,"method":"5x horde","location":"Artisan Cave (B1F)","season":"Summer","status":"kept","value":2000000,"screenshot":"s008-smeargle.webp"},
     {"id":"s009","species":"Nidorino","current_form":"Nidoking","caught_at":"2026-10-17 19:14","encounters":1397,"method":"5x horde","location":"Route 13","season":"Summer","nature":"Lonely","status":"kept","value":2000000,"screenshot":"s009-nidorino.webp"},
     {"id":"s010","species":"Natu","caught_at":"2026-10-20 23:16","encounters":24235,"method":"5x horde","location":"Ruins of Alph (Outside)","season":"Summer","status":"kept","value":4000000,"screenshot":"s010-natu.webp"},
-    {"id":"s011","species":"Golett","current_form":"Golurk","caught_at":"2026-10-24 19:01","encounters":33495,"method":"5x horde","location":"Dragonspiral Tower (2F)","season":"Summer","nature":"Naughty","status":"kept","value":2500000,"screenshot":"s011-golett.webp"}
+    {"id":"s011","species":"Golett","current_form":"Golurk","caught_at":"2026-10-24 19:01","encounters":33495,"method":"5x horde","location":"Dragonspiral Tower (2F)","season":"Summer","nature":"Naughty","status":"kept","value":2500000,"screenshot":"s011-golett.webp"},
+    {"id":"s012","species":"Shuppet","current_form":"Banette","caught_at":"2026-11-03 22:41","encounters":82591,"method":"5x horde","location":"Mt. Pyre (6F)","season":"Autumn","nature":"Quiet","status":"kept","value":4000000,"screenshot":"s012-shuppet.webp","note":"Frisk"}
   ],
   "goals": [
     {"species":"Aerodactyl","priority":"a"},
@@ -22,7 +23,7 @@
     {"species":"Breloom","priority":"s"},
     {"species":"Camerupt","priority":"s"},
     {"species":"Charizard","priority":"s"},
-    {"species":"Cloyster","priority":"s"},
+    {"species":"Cloyster","priority":"hunting"},
     {"species":"Crobat","priority":"a"},
     {"species":"Dragonite","priority":"hunting"},
     {"species":"Emboar","priority":"s"},
@@ -37,10 +38,10 @@
     {"species":"Heracross","priority":"s"},
     {"species":"Hydreigon","priority":"b"},
     {"species":"Kingdra","priority":"hunting"},
-    {"species":"Lopunny","priority":"a"},
+    {"species":"Lopunny","priority":"s"},
     {"species":"Lucario","priority":"a"},
     {"species":"Ludicolo","priority":"s"},
-    {"species":"Meowth","priority":"hunting"},
+    {"species":"Meowth","priority":"b"},
     {"species":"Metagross","priority":"s"},
     {"species":"Milotic","priority":"s"},
     {"species":"Ninetales","priority":"s"},
@@ -102,8 +103,13 @@
     {"species":"Garchomp","priority":"b"},
     {"species":"Quagsire","priority":"b"},
     {"species":"Wobbuffet","priority":"b"},
-    {"species":"Lapras","priority":"a"}
+    {"species":"Lapras","priority":"a"},
+    {"species":"Pidgeot","priority":"b"},
+    {"species":"Tentacruel","priority":"b"},
+    {"species":"Slowbro","priority":"b"},
+    {"species":"Shiftry","priority":"b"},
+    {"species":"Magmortar","priority":"b"}
   ],
   "notes": [],
-  "worth": {"pokemon":2500000, "cosmetics":2700000, "pokeyen":1500000}
+  "worth": {"pokemon":0, "cosmetics":2300000, "pokeyen":500000}
 }
