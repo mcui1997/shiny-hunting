@@ -12,7 +12,8 @@
     {"id":"s009","species":"Nidorino","current_form":"Nidoking","caught_at":"2026-10-17 19:14","encounters":1397,"method":"5x horde","location":"Route 13","season":"Summer","nature":"Lonely","status":"kept","value":2000000,"screenshot":"s009-nidorino.webp"},
     {"id":"s010","species":"Natu","caught_at":"2026-10-20 23:16","encounters":24235,"method":"5x horde","location":"Ruins of Alph (Outside)","season":"Summer","status":"kept","value":4000000,"screenshot":"s010-natu.webp"},
     {"id":"s011","species":"Golett","current_form":"Golurk","caught_at":"2026-10-24 19:01","encounters":33495,"method":"5x horde","location":"Dragonspiral Tower (2F)","season":"Summer","nature":"Naughty","status":"kept","value":2500000,"screenshot":"s011-golett.webp"},
-    {"id":"s012","species":"Shuppet","current_form":"Banette","caught_at":"2026-11-03 22:41","encounters":82591,"method":"5x horde","location":"Mt. Pyre (6F)","season":"Autumn","nature":"Quiet","status":"kept","value":4000000,"screenshot":"s012-shuppet.webp","note":"Frisk"}
+    {"id":"s012","species":"Shuppet","current_form":"Banette","caught_at":"2026-11-03 22:41","encounters":82591,"method":"5x horde","location":"Mt. Pyre (6F)","season":"Autumn","nature":"Quiet","status":"kept","value":4000000,"screenshot":"s012-shuppet.webp","note":"Frisk"},
+    {"id":"s013","species":"Duskull","current_form":"Dusclops","caught_at":"2026-11-05 14:56","encounters":11053,"method":"5x horde","location":"Mt. Pyre (1F)","season":"Autumn","nature":"Naive","status":"kept","value":2000000,"screenshot":"s013-duskull.webp","note":"Frisk"}
   ],
   "goals": [
     {"species":"Aerodactyl","priority":"a"},
@@ -62,7 +63,7 @@
     {"species":"Natu","priority":"hunting"},
     {"species":"Rapidash","priority":"s"},
     {"species":"Ditto","priority":"b"},
-    {"species":"Ariados","priority":"hunting"},
+    {"species":"Ariados","priority":"a"},
     {"species":"Politoed","priority":"b"},
     {"species":"Luxray","priority":"a"},
     {"species":"Porygon-Z","priority":"a"},
@@ -94,7 +95,7 @@
     {"species":"Feraligatr","priority":"b"},
     {"species":"Manectric","priority":"a"},
     {"species":"Ferrothorn","priority":"b"},
-    {"species":"Dusclops","priority":"a"},
+    {"species":"Dusclops","priority":"hunting"},
     {"species":"Gardevoir","priority":"a"},
     {"species":"Claydol","priority":"b"},
     {"species":"Rhyperior","priority":"b"},
