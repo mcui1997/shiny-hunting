@@ -39,7 +39,6 @@ export function StatsPage() {
             {s.fastest && <div><dt>Fastest</dt><dd><span className="mono">{formatCount(parseCount(s.fastest.encounters))}</span><span className="muted small">{currentSpecies(s.fastest)} · {when(s.fastest)}</span></dd></div>}
             {s.slowest && <div><dt>Longest</dt><dd><span className="mono">{formatCount(parseCount(s.slowest.encounters))}</span><span className="muted small">{currentSpecies(s.slowest)} · {when(s.slowest)}</span></dd></div>}
           </dl>
-          <span className="small muted overview-note">Traded and bought shinies are left out of luck; fled ones count.</span>
         </section>
         <NetWorth />
       </div>

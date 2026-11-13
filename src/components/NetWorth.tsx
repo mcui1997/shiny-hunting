@@ -6,7 +6,7 @@ import { WORTH_ITEMS, WORTH_LABEL } from '../lib/types';
 
 /**
  * Net worth: shiny value (sum of each kept shiny's value, not editable here) plus amounts you
- * type in: non-shiny Pokémon, cosmetics, and Pokeyen on hand. The ⋯ button opens an editor.
+ * type in: cosmetics and Pokeyen on hand. The ⋯ button opens an editor.
  */
 export function NetWorth() {
   const store = useStore();

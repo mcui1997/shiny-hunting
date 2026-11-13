@@ -13,7 +13,8 @@
     {"id":"s010","species":"Natu","caught_at":"2026-10-20 23:16","encounters":24235,"method":"5x horde","location":"Ruins of Alph (Outside)","season":"Summer","status":"kept","value":4000000,"screenshot":"s010-natu.webp"},
     {"id":"s011","species":"Golett","current_form":"Golurk","caught_at":"2026-10-24 19:01","encounters":33495,"method":"5x horde","location":"Dragonspiral Tower (2F)","season":"Summer","nature":"Naughty","status":"kept","value":2500000,"screenshot":"s011-golett.webp"},
     {"id":"s012","species":"Shuppet","current_form":"Banette","caught_at":"2026-11-03 22:41","encounters":82591,"method":"5x horde","location":"Mt. Pyre (6F)","season":"Autumn","nature":"Quiet","status":"kept","value":4000000,"screenshot":"s012-shuppet.webp","note":"Frisk"},
-    {"id":"s013","species":"Duskull","current_form":"Dusclops","caught_at":"2026-11-05 14:56","encounters":11053,"method":"5x horde","location":"Mt. Pyre (1F)","season":"Autumn","nature":"Naive","status":"kept","value":2000000,"screenshot":"s013-duskull.webp","note":"Frisk"}
+    {"id":"s013","species":"Duskull","current_form":"Dusclops","caught_at":"2026-11-05 14:56","encounters":11053,"method":"5x horde","location":"Mt. Pyre (1F)","season":"Autumn","nature":"Naive","status":"kept","value":2000000,"screenshot":"s013-duskull.webp","note":"Frisk"},
+    {"id":"s014","species":"Boldore","current_form":"Gigalith","caught_at":"2026-11-13 00:00","encounters":53375,"method":"5x horde","location":"Guidance Chamber","season":"Autumn","nature":"Bold","ball":"Great Ball","status":"kept","screenshot":"s014-boldore.webp"}
   ],
   "goals": [
     {"species":"Aerodactyl","priority":"a"},
@@ -59,7 +60,7 @@
     {"species":"Umbreon","priority":"s"},
     {"species":"Volcarona","priority":"a"},
     {"species":"Wailord","priority":"hunting"},
-    {"species":"Weezing","priority":"hunting"},
+    {"species":"Weezing","priority":"s"},
     {"species":"Natu","priority":"hunting"},
     {"species":"Rapidash","priority":"s"},
     {"species":"Ditto","priority":"b"},
@@ -112,5 +113,5 @@
     {"species":"Magmortar","priority":"b"}
   ],
   "notes": [],
-  "worth": {"pokemon":0, "cosmetics":2300000, "pokeyen":500000}
+  "worth": {"cosmetics":2300000, "pokeyen":500000}
 }
