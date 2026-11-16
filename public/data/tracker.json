@@ -14,7 +14,8 @@
     {"id":"s011","species":"Golett","current_form":"Golurk","caught_at":"2026-10-24 19:01","encounters":33495,"method":"5x horde","location":"Dragonspiral Tower (2F)","season":"Summer","nature":"Naughty","status":"kept","value":2500000,"screenshot":"s011-golett.webp"},
     {"id":"s012","species":"Shuppet","current_form":"Banette","caught_at":"2026-11-03 22:41","encounters":82591,"method":"5x horde","location":"Mt. Pyre (6F)","season":"Autumn","nature":"Quiet","status":"kept","value":4000000,"screenshot":"s012-shuppet.webp","note":"Frisk"},
     {"id":"s013","species":"Duskull","current_form":"Dusclops","caught_at":"2026-11-05 14:56","encounters":11053,"method":"5x horde","location":"Mt. Pyre (1F)","season":"Autumn","nature":"Naive","status":"kept","value":2000000,"screenshot":"s013-duskull.webp","note":"Frisk"},
-    {"id":"s014","species":"Boldore","current_form":"Gigalith","caught_at":"2026-11-13 00:00","encounters":53375,"method":"5x horde","location":"Guidance Chamber","season":"Autumn","nature":"Bold","ball":"Great Ball","status":"kept","screenshot":"s014-boldore.webp"}
+    {"id":"s014","species":"Boldore","current_form":"Gigalith","caught_at":"2026-11-13 00:00","encounters":53375,"method":"5x horde","location":"Guidance Chamber","season":"Autumn","nature":"Bold","ball":"Great Ball","status":"kept","value":2000000,"screenshot":"s014-boldore.webp"},
+    {"id":"s015","species":"Horsea","current_form":"Kingdra","caught_at":"2026-11-15 19:45","encounters":24442,"method":"5x horde","location":"Dragon's Den (B1F)","season":"Autumn","nature":"Quirky","status":"kept","value":3000000,"screenshot":"s015-horsea.webp","note":"Damp"}
   ],
   "goals": [
     {"species":"Aerodactyl","priority":"a"},
@@ -23,14 +24,14 @@
     {"species":"Bisharp","priority":"b"},
     {"species":"Blastoise","priority":"b"},
     {"species":"Breloom","priority":"s"},
-    {"species":"Camerupt","priority":"s"},
+    {"species":"Camerupt","priority":"hunting"},
     {"species":"Charizard","priority":"s"},
     {"species":"Cloyster","priority":"hunting"},
     {"species":"Crobat","priority":"a"},
     {"species":"Dragonite","priority":"hunting"},
     {"species":"Emboar","priority":"s"},
     {"species":"Excadrill","priority":"s"},
-    {"species":"Flygon","priority":"s"},
+    {"species":"Flygon","priority":"hunting"},
     {"species":"Gallade","priority":"b"},
     {"species":"Gigalith","priority":"s"},
     {"species":"Gliscor","priority":"s"},
@@ -40,10 +41,10 @@
     {"species":"Heracross","priority":"s"},
     {"species":"Hydreigon","priority":"b"},
     {"species":"Kingdra","priority":"hunting"},
-    {"species":"Lopunny","priority":"s"},
+    {"species":"Lopunny","priority":"hunting"},
     {"species":"Lucario","priority":"a"},
     {"species":"Ludicolo","priority":"s"},
-    {"species":"Meowth","priority":"b"},
+    {"species":"Meowth","priority":"hunting"},
     {"species":"Metagross","priority":"s"},
     {"species":"Milotic","priority":"s"},
     {"species":"Ninetales","priority":"s"},
@@ -60,9 +61,9 @@
     {"species":"Umbreon","priority":"s"},
     {"species":"Volcarona","priority":"a"},
     {"species":"Wailord","priority":"hunting"},
-    {"species":"Weezing","priority":"s"},
+    {"species":"Weezing","priority":"hunting"},
     {"species":"Natu","priority":"hunting"},
-    {"species":"Rapidash","priority":"s"},
+    {"species":"Rapidash","priority":"hunting"},
     {"species":"Ditto","priority":"b"},
     {"species":"Ariados","priority":"a"},
     {"species":"Politoed","priority":"b"},
@@ -113,5 +114,5 @@
     {"species":"Magmortar","priority":"b"}
   ],
   "notes": [],
-  "worth": {"cosmetics":2300000, "pokeyen":500000}
+  "worth": {"cosmetics":7500000, "pokeyen":0}
 }
