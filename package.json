@@ -9,7 +9,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "gamedata": "node scripts/build-gamedata.mjs"
+    "gamedata": "node scripts/build-gamedata.mjs",
+    "readme": "vite-node scripts/readme-stats.ts"
   },
   "dependencies": {
     "react": "^18.3.1",
