@@ -8,7 +8,7 @@
 <!-- stats:start -->
 | Shinies | Encounters | Per shiny | Luck | Latest |
 |:-:|:-:|:-:|:-:|:-:|
-| **15** (14 kept, 1 sold) | 393,823 | 26,255 | 1.03× | Kingdra (caught as Horsea), 2026-11-15 |
+| **16** (15 kept, 1 sold) | 396,796 | 24,800 | 1.09× | Meowth, 2026-11-16 |
 <!-- stats:end -->
 
 <p align="center"><sub>Luck is shinies found vs. expected at 1 in 27,000 (donator status).</sub></p>

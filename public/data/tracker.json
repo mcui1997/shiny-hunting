@@ -15,7 +15,8 @@
     {"id":"s012","species":"Shuppet","current_form":"Banette","caught_at":"2026-11-03 22:41","encounters":82591,"method":"5x horde","location":"Mt. Pyre (6F)","season":"Autumn","nature":"Quiet","status":"kept","value":4000000,"screenshot":"s012-shuppet.webp","note":"Frisk"},
     {"id":"s013","species":"Duskull","current_form":"Dusclops","caught_at":"2026-11-05 14:56","encounters":11053,"method":"5x horde","location":"Mt. Pyre (1F)","season":"Autumn","nature":"Naive","status":"kept","value":2000000,"screenshot":"s013-duskull.webp","note":"Frisk"},
     {"id":"s014","species":"Boldore","current_form":"Gigalith","caught_at":"2026-11-13 00:00","encounters":53375,"method":"5x horde","location":"Guidance Chamber","season":"Autumn","nature":"Bold","ball":"Great Ball","status":"kept","value":2000000,"screenshot":"s014-boldore.webp"},
-    {"id":"s015","species":"Horsea","current_form":"Kingdra","caught_at":"2026-11-15 19:45","encounters":24442,"method":"5x horde","location":"Dragon's Den (B1F)","season":"Autumn","nature":"Quirky","status":"kept","value":3000000,"screenshot":"s015-horsea.webp","note":"Damp"}
+    {"id":"s015","species":"Horsea","current_form":"Kingdra","caught_at":"2026-11-15 19:45","encounters":24442,"method":"5x horde","location":"Dragon's Den (B1F)","season":"Autumn","nature":"Quirky","status":"kept","value":3000000,"screenshot":"s015-horsea.webp","note":"Damp"},
+    {"id":"s016","species":"Meowth","caught_at":"2026-11-16 12:05","encounters":2973,"method":"5x horde","location":"Treasure Beach","season":"Autumn","status":"kept","value":2000000,"screenshot":"s016-meowth.webp"}
   ],
   "goals": [
     {"species":"Aerodactyl","priority":"a"},
