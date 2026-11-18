@@ -460,3 +460,37 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
 @media (max-width: 720px) { .clock-wrap { order: 3; margin: 0; } }
 
 .clock-time { font-variant-numeric: tabular-nums; }
+
+/* ---------- plan (seasons) ---------- */
+.plan { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.plan-col { background: var(--paper); border: 1px solid var(--line); border-top: 4px solid var(--season); border-radius: 18px; padding: 12px 10px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.plan-col--spring { --season: var(--good); }
+.plan-col--summer { --season: var(--over); }
+.plan-col--autumn { --season: var(--ember); }
+.plan-col--winter { --season: #2B5F8C; }
+.plan-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 0 4px; }
+.plan-head .h3 { color: var(--season); display: inline-flex; align-items: center; gap: 6px; }
+.plan-tier { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 3px 8px; border-radius: 999px; }
+.plan-tier--hunting { background: var(--ember-soft); color: var(--ember-ink); }
+.plan-tier--s { background: #FADCD3; color: #8F2D17; }
+.plan-tier--a { background: #FCE8CC; color: #7F4A06; }
+.plan-tier--b { background: #E7F0DC; color: #3D5A1E; }
+.plan-row { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; align-items: start; padding: 7px 8px 7px 6px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); text-decoration: none; }
+.plan-row:hover { color: var(--ink); border-color: var(--line-strong); background: #FAFBF9; }
+.plan-row--planned { background: var(--gilt); border-color: var(--gilt-line); }
+.plan-row--planned:hover { background: var(--gold-soft); }
+.plan-art { width: 44px; height: 44px; border-radius: 10px; background: var(--tile); display: grid; place-items: center; }
+.plan-row--planned .plan-art { background: var(--paper); }
+.plan-art .sprite { max-width: 40px; max-height: 40px; }
+.plan-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.plan-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.plan-name { font-weight: 700; font-size: 14px; }
+.plan-share { font-weight: 700; font-size: 13px; }
+.plan-where { font-size: 12.5px; color: var(--neutral-ink); }
+.plan-where b { color: var(--ink); font-weight: 600; }
+.plan-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 12px; color: var(--moss); }
+.plan-meta .pill { font-size: 10.5px; padding: 1px 7px; }
+.plan-with { color: var(--lagoon-deep); font-weight: 600; }
+.plan-horde { font-size: 11px; color: var(--moss); }
+@media (max-width: 1000px) { .plan { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .plan { grid-template-columns: minmax(0, 1fr); } }

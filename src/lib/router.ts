@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 export type Route =
   | { page: 'home' }
+  | { page: 'plan' }
   | { page: 'dex' }
   | { page: 'species'; id: number }
   | { page: 'caught' }
@@ -22,6 +23,7 @@ export function parseHash(hash: string): Route {
       const id = /^\d{1,4}$/.test(parts[1] ?? '') ? Number.parseInt(parts[1], 10) : NaN;
       return Number.isFinite(id) ? { page: 'species', id } : { page: 'home' };
     }
+    case 'plan': return { page: 'plan' };
     case 'caught': return { page: 'caught' };
     case 'dex': return { page: 'dex' };
     case 'goals': return { page: 'home' }; // the old Goals page is part of Home now
@@ -36,6 +38,7 @@ export function parseHash(hash: string): Route {
 
 export const href = {
   home: () => '#/',
+  plan: () => '#/plan',
   dex: () => '#/dex',
   species: (id: number) => `#/p/${id}`,
   caught: () => '#/caught',

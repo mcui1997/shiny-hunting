@@ -55,6 +55,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
         <Clock />
         <nav className="nav" aria-label="Main">
           {navLink('home', href.home(), 'Home')}
+          {navLink('plan', href.plan(), 'Plan')}
           {navLink('caught', href.caught(), 'Owned')}
           {navLink('dex', href.dex(), 'Dex')}
           {navLink('stats', href.stats(), 'Stats')}
