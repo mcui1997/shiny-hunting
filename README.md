@@ -8,7 +8,7 @@
 <!-- stats:start -->
 | Shinies | Encounters | Per shiny | Luck | Latest |
 |:-:|:-:|:-:|:-:|:-:|
-| **16** (15 kept, 1 sold) | 396,796 | 24,800 | 1.09× | Meowth, 2026-11-16 |
+| **17** (16 kept, 1 sold) | 403,978 | 23,763 | 1.14× | Weezing (caught as Koffing), 2026-11-17 |
 <!-- stats:end -->
 
 <p align="center"><sub>Luck is shinies found vs. expected at 1 in 27,000 (donator status).</sub></p>
