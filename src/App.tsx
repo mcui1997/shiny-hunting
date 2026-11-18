@@ -5,6 +5,7 @@ import { CatchEditPage } from './pages/CatchEditPage';
 import { CaughtPage } from './pages/CaughtPage';
 import { DexPage } from './pages/DexPage';
 import { HomePage } from './pages/HomePage';
+import { PlanPage } from './pages/PlanPage';
 import { SpeciesPage } from './pages/SpeciesPage';
 import { StatsPage } from './pages/StatsPage';
 
@@ -18,6 +19,7 @@ function Routes() {
   else {
     switch (route.page) {
       case 'species': page = <SpeciesPage key={route.id} id={route.id} />; break;
+      case 'plan': page = <PlanPage />; break;
       case 'caught': page = <CaughtPage />; break;
       case 'dex': page = <DexPage />; break;
       case 'stats': page = <StatsPage />; break;

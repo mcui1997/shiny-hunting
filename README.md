@@ -14,6 +14,7 @@
 <p align="center"><sub>Luck is shinies found vs. expected at 1 in 27,000 (donator status).</sub></p>
 
 - **Home** – totals and a tier list: Owned, Hunting, S, A, B
+- **Plan** – each open goal's best 5x horde in every season, with one spot picked to hunt it
 - **Owned** – every catch; open one for its battle screenshot, details and a note
 - **Dex** – all 649 Pokémon with filters for final forms, unowned and missing
 - **Species pages** – abilities, uses, stats, and the best 5x horde per season
