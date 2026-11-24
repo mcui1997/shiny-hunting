@@ -17,7 +17,7 @@
     {"id":"s014","species":"Boldore","current_form":"Gigalith","caught_at":"2026-11-13 00:00","encounters":53375,"method":"5x horde","location":"Guidance Chamber","season":"Autumn","nature":"Bold","ball":"Great Ball","status":"kept","value":2000000,"screenshot":"s014-boldore.webp"},
     {"id":"s015","species":"Horsea","current_form":"Kingdra","caught_at":"2026-11-15 19:45","encounters":24442,"method":"5x horde","location":"Dragon's Den (B1F)","season":"Autumn","nature":"Quirky","status":"kept","value":3000000,"screenshot":"s015-horsea.webp","note":"Damp"},
     {"id":"s016","species":"Meowth","caught_at":"2026-11-16 12:05","encounters":2973,"method":"5x horde","location":"Treasure Beach","season":"Autumn","status":"kept","value":2000000,"screenshot":"s016-meowth.webp"},
-    {"id":"s017","species":"Koffing","current_form":"Weezing","caught_at":"2026-11-17 22:48","encounters":7182,"method":"5x horde","location":"Burned Tower (B1F)","season":"Autumn","nature":"Bashful","status":"kept","screenshot":"s017-koffing.webp","note":"Reactive Gas"}
+    {"id":"s017","species":"Koffing","current_form":"Weezing","caught_at":"2026-11-17 22:48","encounters":7182,"method":"5x horde","location":"Burned Tower (B1F)","season":"Autumn","nature":"Bashful","status":"kept","value":2000000,"screenshot":"s017-koffing.webp","note":"Reactive Gas"}
   ],
   "goals": [
     {"species":"Aerodactyl","priority":"a"},
@@ -38,18 +38,18 @@
     {"species":"Gigalith","priority":"s"},
     {"species":"Gliscor","priority":"s"},
     {"species":"Golurk","priority":"hunting"},
-    {"species":"Haxorus","priority":"s"},
+    {"species":"Haxorus","priority":"hunting"},
     {"species":"Heatran","priority":"b"},
     {"species":"Heracross","priority":"s"},
     {"species":"Hydreigon","priority":"b"},
     {"species":"Kingdra","priority":"hunting"},
     {"species":"Lopunny","priority":"hunting"},
     {"species":"Lucario","priority":"a"},
-    {"species":"Ludicolo","priority":"s"},
+    {"species":"Ludicolo","priority":"hunting"},
     {"species":"Meowth","priority":"hunting"},
     {"species":"Metagross","priority":"s"},
     {"species":"Milotic","priority":"s"},
-    {"species":"Ninetales","priority":"s"},
+    {"species":"Ninetales","priority":"hunting"},
     {"species":"Pikachu","priority":"a"},
     {"species":"Psyduck","priority":"a"},
     {"species":"Rampardos","priority":"b"},
@@ -62,10 +62,10 @@
     {"species":"Typhlosion","priority":"s"},
     {"species":"Umbreon","priority":"s"},
     {"species":"Volcarona","priority":"a"},
-    {"species":"Wailord","priority":"hunting"},
+    {"species":"Wailord","priority":"s"},
     {"species":"Weezing","priority":"hunting"},
     {"species":"Natu","priority":"hunting"},
-    {"species":"Rapidash","priority":"a"},
+    {"species":"Rapidash","priority":"s"},
     {"species":"Ditto","priority":"b"},
     {"species":"Ariados","priority":"a"},
     {"species":"Politoed","priority":"b"},
@@ -75,7 +75,7 @@
     {"species":"Absol","priority":"a"},
     {"species":"Altaria","priority":"a"},
     {"species":"Spinda","priority":"b"},
-    {"species":"Drifblim","priority":"s"},
+    {"species":"Drifblim","priority":"a"},
     {"species":"Empoleon","priority":"a"},
     {"species":"Sharpedo","priority":"b"},
     {"species":"Delcatty","priority":"b"},
@@ -113,8 +113,9 @@
     {"species":"Tentacruel","priority":"b"},
     {"species":"Slowbro","priority":"b"},
     {"species":"Shiftry","priority":"b"},
-    {"species":"Magmortar","priority":"b"}
+    {"species":"Magmortar","priority":"b"},
+    {"species":"Delibird","priority":"b"}
   ],
   "notes": [],
-  "worth": {"cosmetics":7500000, "pokeyen":0}
+  "worth": {"cosmetics":12500000, "pokeyen":3800000}
 }

@@ -1,4 +1,4 @@
-import type { Game } from './game';
+import { hordeSpots, type Game } from './game';
 import { SEASONS, TIMES, type HordeRow, type Season, type Share } from './types';
 
 /**
@@ -177,3 +177,47 @@ const PLACE_TYPE: Record<string, string> = { Water: 'Surf', 'Dark Grass': 'Dark 
 export const placeType = (type: string) => PLACE_TYPE[type] ?? '';
 export const onlyLabel = (seasons: Season[]) => (seasons.length <= 2 ? `${seasons.join(' + ')} only` : '');
 
+
+export interface HuntSpot {
+  size: 3 | 5;
+  area: string;
+  region: string;
+  type: string;
+  /** Seasons the horde runs. */
+  seasons: Season[];
+  /** Times of day the share holds. */
+  times: string[];
+  /** Share of the horde that is this species or an earlier stage. */
+  share: number;
+  /** Earlier stages you meet there, when not the species itself. */
+  via: string[];
+}
+
+/**
+ * The single best place to hunt a species, for the tile hover card: the 5x horde the Plan page
+ * would show with the biggest share (then more of the day, then more seasons), else the best
+ * 3x horde of it or an earlier stage. Null when it has no horde at all.
+ */
+export function bestSpot(game: Game, name: string): HuntSpot | null {
+  const sp = game.byName.get(name);
+  if (!sp) return null;
+  const plan = buildPlan(game, [{ species: sp.name, priority: 'b' }]);
+  let top: PlanCard | null = null;
+  for (const season of SEASONS) {
+    for (const c of plan[season]) {
+      if (!top || less([-c.share, -c.times.length, -c.row.seasons.length], [-top.share, -top.times.length, -top.row.seasons.length])) top = c;
+    }
+  }
+  if (top) {
+    const { area, region, type, seasons } = top.row;
+    return { size: 5, area, region, type, seasons, times: top.times, share: top.share, via: top.via };
+  }
+  const line = game.family(sp.id).filter((f) => game.canBecome(f.id, sp.id));
+  const three = line
+    .flatMap((f) => hordeSpots(f).filter((s) => s.row.size === 3).map((s) => ({ s, f })))
+    .sort((a, b) => b.s.best - a.s.best || b.s.bestTimes.length - a.s.bestTimes.length || b.s.row.seasons.length - a.s.row.seasons.length);
+  if (!three.length) return null;
+  const { s, f } = three[0];
+  const { area, region, type, seasons } = s.row;
+  return { size: 3, area, region, type, seasons, times: s.bestTimes, share: s.best, via: f.id === sp.id ? [] : [f.name] };
+}

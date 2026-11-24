@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { Game } from './game';
-import { buildPlan } from './plan';
+import { bestSpot, buildPlan } from './plan';
 import { SEASONS, type GameData } from './types';
 
 const game = new Game(JSON.parse(readFileSync(resolvePath(__dirname, '../../public/data/pokemon.json'), 'utf8')) as GameData);
@@ -45,5 +45,18 @@ describe('seasonal plan', () => {
       { species: 'Manectric', priority: 'a' }, { species: 'Alakazam', priority: 'hunting' }, { species: 'Psyduck', priority: 'a' },
     ]);
     expect(plan.Winter.map((c) => c.name)).toEqual(['Alakazam', 'Manectric', 'Psyduck']);
+  });
+});
+
+describe('best spot (tile hover card)', () => {
+  it('picks the biggest 5x share, through an earlier stage', () => {
+    const s = bestSpot(game, 'Weezing')!;
+    expect(s.size).toBe(5);
+    expect(s.share).toBe(100);
+    expect(s.via).toEqual(['Koffing']);
+  });
+  it('is null when there is no horde at all', () => {
+    expect(bestSpot(game, 'Heatran')).toBeNull();
+    expect(bestSpot(game, 'Lapras')).toBeNull();
   });
 });
