@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Sprite } from '../components/Sprite';
 import { catchStatusPill, formatWhen } from '../components/ui';
-import { LIMITS } from '../lib/data';
+import { formatValue, LIMITS, parseValue } from '../lib/data';
 import { useDerived } from '../lib/derived';
 import { suggestedNote } from '../lib/notes';
 import { href } from '../lib/router';
@@ -56,6 +56,7 @@ function LogItem({ c, open, onToggle }: { c: CatchRow; open: boolean; onToggle: 
   const sp = d.game.byName.get(now);
   const when = formatWhen(c.caught_at);
   const detailId = `log-${c.id}`;
+  const value = c.status === 'kept' ? parseValue(c.value) : null;
   return (
     <li className={`log-item${c.status === 'kept' ? '' : ' log-item--gone'}`}>
       <button type="button" className="log-row" aria-expanded={open} aria-controls={detailId} onClick={onToggle}>
@@ -65,7 +66,8 @@ function LogItem({ c, open, onToggle }: { c: CatchRow; open: boolean; onToggle: 
           {now !== c.species && <span className="small muted">caught as {c.species}</span>}
         </span>
         <span className="log-when">{when.date}{when.time ? ` · ${when.time}` : ''}</span>
-        <span className="log-enc">{c.encounters ? formatCount(Number(c.encounters)) : '—'}</span>
+        <span className="log-enc" title="Encounters">{c.encounters ? formatCount(Number(c.encounters)) : '—'}</span>
+        <span className="log-value" title={value !== null ? `Value: ${value.toLocaleString('en-US')}` : undefined}>{value !== null ? formatValue(value) : ''}</span>
         <svg className="log-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
       </button>
       {open && <LogDetail id={detailId} c={c} />}
